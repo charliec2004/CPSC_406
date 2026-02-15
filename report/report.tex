@@ -168,12 +168,199 @@ This section is optional.
 
 \subsubsection{Homework}
 
+\textbf{Exercise 1 (Word processing with DFAs).}
+Given two DFAs $\mathcal{A}_1$ and $\mathcal{A}_2$ over $\Sigma = \{a, b\}$, determine which words are accepted/refused and describe the accepted languages.
+
+\paragraph{DFA $\mathcal{A}_1$.} States $\{1, 2, 3, 4\}$, start state $1$, accepting state $3$:
+
+\begin{center}
+\begin{tabular}{c|cc}
+ & $a$ & $b$ \\ \hline
+$1$ & $2$ & $4$ \\
+$2$ & $2$ & $3$ \\
+$3$ & $2$ & $2$ \\
+$4$ & $4$ & $4$ \\
+\end{tabular}
+\end{center}
+
+\paragraph{DFA $\mathcal{A}_2$.} States $\{1, 2, 3\}$, start state $1$, accepting state $3$:
+
+\begin{center}
+\begin{tabular}{c|cc}
+ & $a$ & $b$ \\ \hline
+$1$ & $2$ & $1$ \\
+$2$ & $3$ & $1$ \\
+$3$ & $3$ & $1$ \\
+\end{tabular}
+\end{center}
+
+\paragraph{Part 1: Tracing words.} For each word, I walked through the transition table one character at a time and recorded the states:
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+$w$ & $\mathcal{A}_1$ trace & $\mathcal{A}_1$? & $\mathcal{A}_2$ trace & $\mathcal{A}_2$? \\ \hline
+$aaa$ & $1 \to 2 \to 2 \to 2$ & No & $1 \to 2 \to 3 \to 3$ & Yes \\
+$aab$ & $1 \to 2 \to 2 \to 3$ & Yes & $1 \to 2 \to 3 \to 1$ & No \\
+$aba$ & $1 \to 2 \to 3 \to 2$ & No & $1 \to 2 \to 1 \to 2$ & No \\
+$abb$ & $1 \to 2 \to 3 \to 2$ & No & $1 \to 2 \to 1 \to 1$ & No \\
+$baa$ & $1 \to 4 \to 4 \to 4$ & No & $1 \to 1 \to 2 \to 3$ & Yes \\
+$bab$ & $1 \to 4 \to 4 \to 4$ & No & $1 \to 1 \to 2 \to 1$ & No \\
+$bba$ & $1 \to 4 \to 4 \to 4$ & No & $1 \to 1 \to 1 \to 2$ & No \\
+$bbb$ & $1 \to 4 \to 4 \to 4$ & No & $1 \to 1 \to 1 \to 1$ & No \\
+\end{tabular}
+\end{center}
+
+\paragraph{Part 2: Describing the languages.}
+
+\textbf{$L(\mathcal{A}_1)$: Words that start with $a$ and end with an odd-length block of consecutive $b$'s.}
+
+Starting with $b$ traps us in state $4$, so the word must start with $a$. After that, reading $a$ resets us to state $2$, and reading $b$ flips between states $2$ and $3$. So we accept when the number of $b$'s since the last $a$ is odd.
+
+\textbf{$L(\mathcal{A}_2)$: Words that end with $aa$.}
+
+Any $b$ resets us to state $1$, and $a$'s move us along $1 \to 2 \to 3$ (staying in $3$ on more $a$'s). So we accept when the word ends with two or more $a$'s.
+
+\bigskip
+
+\textbf{Exercise 2 (Designing DFAs).}
+Design DFAs over $\Sigma = \{a,b\}$ for each of the following languages.
+
+\paragraph{(a) All words ending with $ab$.} Three states: $q_0$ (no progress), $q_1$ (last char was $a$), $q_2$ (saw $ab$, accepting).
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial] (q0) {$q_0$};
+  \node[state] (q1) [right=of q0] {$q_1$};
+  \node[state, accepting] (q2) [right=of q1] {$q_2$};
+  \path[->]
+    (q0) edge node {$a$} (q1)
+         edge [loop above] node {$b$} ()
+    (q1) edge node {$b$} (q2)
+         edge [loop above] node {$a$} ()
+    (q2) edge [bend left] node {$a$} (q1)
+         edge [bend left=50] node [swap] {$b$} (q0);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{(b) All words containing $aba$.} Track how much of $aba$ we've matched. Once found, we stay accepting (trap state).
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial] (q0) {$q_0$};
+  \node[state] (q1) [right=of q0] {$q_1$};
+  \node[state] (q2) [right=of q1] {$q_2$};
+  \node[state, accepting] (q3) [right=of q2] {$q_3$};
+  \path[->]
+    (q0) edge node {$a$} (q1)
+         edge [loop above] node {$b$} ()
+    (q1) edge node {$b$} (q2)
+         edge [loop above] node {$a$} ()
+    (q2) edge node {$a$} (q3)
+         edge [bend left=50] node [swap] {$b$} (q0)
+    (q3) edge [loop above] node {$a,b$} ();
+\end{tikzpicture}
+\end{center}
+
+\paragraph{(c) All words with an odd number of $a$'s and an odd number of $b$'s.} Four states for each combination of (parity of $a$'s, parity of $b$'s). Reading $a$ flips the $a$-parity, reading $b$ flips the $b$-parity.
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=3cm,on grid,auto]
+  \node[state, initial] (ee) {$q_{ee}$};
+  \node[state] (oe) [right=of ee] {$q_{oe}$};
+  \node[state] (eo) [below=of ee] {$q_{eo}$};
+  \node[state, accepting] (oo) [right=of eo] {$q_{oo}$};
+  \path[->]
+    (ee) edge [bend left] node {$a$} (oe)
+         edge [bend left] node [swap] {$b$} (eo)
+    (oe) edge [bend left] node {$a$} (ee)
+         edge [bend left] node {$b$} (oo)
+    (eo) edge [bend left] node [swap] {$b$} (ee)
+         edge [bend left] node [swap] {$a$} (oo)
+    (oo) edge [bend left] node {$b$} (oe)
+         edge [bend left] node [swap] {$a$} (eo);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{(d) All words with an even number of $a$'s and an odd number of $b$'s.} Same DFA as (c), just with $q_{eo}$ as the accepting state instead of $q_{oo}$.
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=3cm,on grid,auto]
+  \node[state, initial] (ee) {$q_{ee}$};
+  \node[state] (oe) [right=of ee] {$q_{oe}$};
+  \node[state, accepting] (eo) [below=of ee] {$q_{eo}$};
+  \node[state] (oo) [right=of eo] {$q_{oo}$};
+  \path[->]
+    (ee) edge [bend left] node {$a$} (oe)
+         edge [bend left] node [swap] {$b$} (eo)
+    (oe) edge [bend left] node {$a$} (ee)
+         edge [bend left] node {$b$} (oo)
+    (eo) edge [bend left] node [swap] {$b$} (ee)
+         edge [bend left] node [swap] {$a$} (oo)
+    (oo) edge [bend left] node {$b$} (oe)
+         edge [bend left] node [swap] {$a$} (eo);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{(e) All words where any three consecutive characters contain at least one $a$.} This is the same as saying the word never contains $bbb$. We count consecutive $b$'s.
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial, accepting] (q0) {$q_0$};
+  \node[state, accepting] (q1) [right=of q0] {$q_1$};
+  \node[state, accepting] (q2) [right=of q1] {$q_2$};
+  \node[state] (qd) [right=of q2] {$q_d$};
+  \path[->]
+    (q0) edge node {$b$} (q1)
+         edge [loop above] node {$a$} ()
+    (q1) edge node {$b$} (q2)
+         edge [bend left] node [swap] {$a$} (q0)
+    (q2) edge node {$b$} (qd)
+         edge [bend left=50] node [swap] {$a$} (q0)
+    (qd) edge [loop above] node {$a,b$} ();
+\end{tikzpicture}
+\end{center}
+
+\paragraph{(f) All words containing $bbb$.} Same idea as (e) but we count consecutive $b$'s until we hit three, then stay accepting.
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial] (q0) {$q_0$};
+  \node[state] (q1) [right=of q0] {$q_1$};
+  \node[state] (q2) [right=of q1] {$q_2$};
+  \node[state, accepting] (q3) [right=of q2] {$q_3$};
+  \path[->]
+    (q0) edge node {$b$} (q1)
+         edge [loop above] node {$a$} ()
+    (q1) edge node {$b$} (q2)
+         edge [bend left] node [swap] {$a$} (q0)
+    (q2) edge node {$b$} (q3)
+         edge [bend left=50] node [swap] {$a$} (q0)
+    (q3) edge [loop above] node {$a,b$} ();
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Comparison.}
+\begin{itemize}
+    \item \textbf{(e) and (f) are complements.} Same states and transitions, just with accept/reject swapped. To get the complement of a regular language, flip the accepting states.
+    \item \textbf{(c) and (d) share the same structure.} Same transitions, different accepting state. One automaton skeleton, two different languages.
+    \item \textbf{(a) vs.\ (b).} For end-patterns (a), the DFA cycles back when the match breaks. For substrings (b), once we find it we're done and sit in the accepting state.
+\end{itemize}
 
 \subsubsection{Exploration}
 
+I did research on DFAs to understand them better, here are some interesting things I found.
+
+DFAs can only remember which state they're in. No extra memory, no stack, nothing. That sounds limiting, but it's actually why they're useful.
+
+\paragraph{Where DFAs show up.} Regex engines (\texttt{grep}, Python \texttt{re}, etc.) compile patterns into automata. Compilers use DFAs to break source code into tokens. Even traffic lights and vending machines are basically finite state machines.
+
+\paragraph{Why the limitation is good.} Since DFAs have finite memory, they always finish running, you can always check if two DFAs accept the same language, and you can always shrink a DFA to its smallest form. These are things you lose with stronger models. With a Turing machine, for example, you can't even tell if it will stop running.
+
+\paragraph{DFAs and pure functions.} A pure function always gives the same output for the same input, with no hidden state or side effects. That makes it easy to test and reason about. DFAs work the same way: $\delta(q, a)$ just looks at the current state and symbol, nothing else. You can check every possible behavior because there are only finitely many states. You give up some power but everything is easy to follow.
 
 \subsubsection{Questions}
 
+We showed in Exercise 2 that different-looking DFAs can accept the same language (e.g., the complement pair for $bbb$). Since every regular language has a unique minimal DFA, can you always prove two DFAs are equivalent just by minimizing both and comparing?
 
 \section{Synthesis}
 
