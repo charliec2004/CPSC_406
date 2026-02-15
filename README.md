@@ -1,4 +1,4 @@
-# CPSC-408
+# CPSC-406
 
 ## Student
 
