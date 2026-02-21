@@ -362,6 +362,205 @@ DFAs can only remember which state they're in. No extra memory, no stack, nothin
 
 We showed in Exercise 2 that different-looking DFAs can accept the same language (e.g., the complement pair for $bbb$). Since every regular language has a unique minimal DFA, can you always prove two DFAs are equivalent just by minimizing both and comparing?
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Week 2}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Exercise 2}
+
+Consider two DFAs $\mathcal{B}^{(1)}$ and $\mathcal{B}^{(2)}$ over $\Sigma = \{a, b\}$. We construct their intersection automaton using the product construction.
+
+\paragraph{DFA $\mathcal{B}^{(1)}$.} States $\{p_0, p_1, p_2\}$, start state $p_0$, accepting state $p_0$:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial, accepting] (p0) {$p_0$};
+  \node[state] (p1) [right=of p0] {$p_1$};
+  \node[state] (p2) [right=of p1] {$p_2$};
+  \path[->]
+    (p0) edge node {$a$} (p1)
+         edge [loop above] node {$b$} ()
+    (p1) edge node {$a$} (p2)
+         edge [loop above] node {$b$} ()
+    (p2) edge [bend left=50] node [swap] {$a$} (p0)
+         edge [loop above] node {$b$} ();
+\end{tikzpicture}
+\end{center}
+
+\paragraph{DFA $\mathcal{B}^{(2)}$.} States $\{q_0, q_1, q_2\}$, start state $q_0$, accepting state $q_0$:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial, accepting] (q0) {$q_0$};
+  \node[state] (q1) [right=of q0] {$q_1$};
+  \node[state] (q2) [right=of q1] {$q_2$};
+  \path[->]
+    (q0) edge node {$a$} (q1)
+         edge [loop above] node {$b$} ()
+    (q1) edge node {$a$} (q2)
+         edge [bend left] node [swap] {$b$} (q0)
+    (q2) edge [loop above] node {$a,b$} ();
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Part 1: Describing the languages.}
+
+\textbf{$L(\mathcal{B}^{(1)})$: Words where the number of $a$'s is divisible by~3.}
+
+Since $b$ self-loops at every state, only $a$'s matter. Reading $a$ cycles $p_0 \to p_1 \to p_2 \to p_0$, and $p_0$ is the only accepting state, so we accept after $0, 3, 6, \ldots$ letters~$a$:
+\[
+  L(\mathcal{B}^{(1)}) = \{\, w \in \{a,b\}^* : \#_a(w) \equiv 0 \pmod{3} \,\}.
+\]
+
+\textbf{$L(\mathcal{B}^{(2)})$: Words where every $a$ is immediately followed by~$b$.}
+
+Reading $a$ from $q_0$ goes to $q_1$, which ``waits'' for a $b$. Getting $b$ returns to $q_0$, but another $a$ traps us in the dead state $q_2$. So every $a$ must have a $b$ right after it, meaning valid words are sequences of $ab$ and $b$ blocks:
+\[
+  L(\mathcal{B}^{(2)}) = (ab + b)^*.
+\]
+
+\paragraph{Part 2: Intersection automaton $\mathcal{B}$.}
+
+Using the product construction, I built $\mathcal{B} = (Q, \Sigma, \delta, (p_0, q_0), F)$ where $Q = \{p_0, p_1, p_2\} \times \{q_0, q_1, q_2\}$ ($9$ states), $\delta((p_i, q_j), x) = (\delta_1(p_i, x),\, \delta_2(q_j, x))$, and $F = \{(p_0, q_0)\}$ since we need both components accepting. Here is the transition table:
+
+\begin{center}
+\begin{tabular}{c|cc}
+ & $a$ & $b$ \\ \hline
+$(p_0, q_0)^{\star}$ & $(p_1, q_1)$ & $(p_0, q_0)$ \\
+$(p_0, q_1)$ & $(p_1, q_2)$ & $(p_0, q_0)$ \\
+$(p_0, q_2)$ & $(p_1, q_2)$ & $(p_0, q_2)$ \\
+$(p_1, q_0)$ & $(p_2, q_1)$ & $(p_1, q_0)$ \\
+$(p_1, q_1)$ & $(p_2, q_2)$ & $(p_1, q_0)$ \\
+$(p_1, q_2)$ & $(p_2, q_2)$ & $(p_1, q_2)$ \\
+$(p_2, q_0)$ & $(p_0, q_1)$ & $(p_2, q_0)$ \\
+$(p_2, q_1)$ & $(p_0, q_2)$ & $(p_2, q_0)$ \\
+$(p_2, q_2)$ & $(p_0, q_2)$ & $(p_2, q_2)$ \\
+\end{tabular}
+\end{center}
+
+All nine states are reachable. The six states with $q_0$ or $q_1$ form a hexagonal cycle alternating $a, b, a, b, a, b$. The three $q_2$ states are a dead zone since none of them can reach $(p_0, q_0)$. I drew the dead zone as one dashed node below; see the table for full detail.
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt, auto,
+  every state/.style={minimum size=1.1cm, inner sep=0pt, font=\footnotesize}]
+  \node[state, initial above, accepting] (p0q0) at (3,5)   {$p_0 q_0$};
+  \node[state]                           (p1q1) at (6,3.5) {$p_1 q_1$};
+  \node[state]                           (p1q0) at (6,1.5) {$p_1 q_0$};
+  \node[state]                           (p2q1) at (3,0)   {$p_2 q_1$};
+  \node[state]                           (p2q0) at (0,1.5) {$p_2 q_0$};
+  \node[state]                           (p0q1) at (0,3.5) {$p_0 q_1$};
+  \node[state, dashed]                   (dead) at (3,-2)  {\footnotesize dead};
+  \path[->]
+    % hexagonal cycle (alternating a, b)
+    (p0q0) edge node {$a$} (p1q1)
+    (p1q1) edge node {$b$} (p1q0)
+    (p1q0) edge node [swap] {$a$} (p2q1)
+    (p2q1) edge node [swap] {$b$} (p2q0)
+    (p2q0) edge node [swap] {$a$} (p0q1)
+    (p0q1) edge node {$b$} (p0q0)
+    % b self-loops on q0 states
+    (p0q0) edge [loop right] node {$b$} ()
+    (p1q0) edge [loop right] node {$b$} ()
+    (p2q0) edge [loop left]  node {$b$} ()
+    % a from q1 states into dead zone
+    (p0q1) edge [dashed, out=-120, in=180] node [left] {$a$} (dead)
+    (p1q1) edge [dashed, out=-60, in=0] node [right] {$a$} (dead)
+    (p2q1) edge [dashed] node [right] {$a$} (dead)
+    (dead) edge [loop below] node {$a,b$} ();
+\end{tikzpicture}
+\end{center}
+
+So we need both conditions: every $a$ followed by $b$, and the number of $a$'s divisible by 3. Since each $a$ lives in an $ab$-block, the number of $ab$-blocks must be a multiple of 3:
+\[
+  L(\mathcal{B}) = L(\mathcal{B}^{(1)}) \cap L(\mathcal{B}^{(2)})
+  = \{\, w \in (ab+b)^* : \text{the number of } ab\text{-blocks is divisible by } 3 \,\}.
+\]
+
+\paragraph{Part 3: $L(\mathcal{B}) = L(\mathcal{B}^{(1)}) \cap L(\mathcal{B}^{(2)})$.}
+
+We want to show $\hat\delta((p_0,q_0), w) = (\hat\delta_1(p_0, w),\, \hat\delta_2(q_0, w))$ for any word $w$. By induction on $|w|$:
+
+\emph{Base case.} $w = \varepsilon$: $\hat\delta((p_0,q_0),\varepsilon) = (p_0,q_0) = (\hat\delta_1(p_0,\varepsilon),\, \hat\delta_2(q_0,\varepsilon))$. \checkmark
+
+\emph{Inductive step.} Assume it holds for $w$. For any $a \in \Sigma$:
+\begin{align*}
+  \hat\delta((p_0,q_0), wa)
+    &= \delta\bigl(\hat\delta((p_0,q_0), w),\, a\bigr) \\
+    &= \delta\bigl((\hat\delta_1(p_0, w),\, \hat\delta_2(q_0, w)),\, a\bigr)
+       && \text{(ind.\ hyp.)} \\
+    &= \bigl(\delta_1(\hat\delta_1(p_0, w), a),\;
+             \delta_2(\hat\delta_2(q_0, w), a)\bigr)
+       && \text{(def.\ of } \delta \text{)} \\
+    &= \bigl(\hat\delta_1(p_0, wa),\;
+             \hat\delta_2(q_0, wa)\bigr).
+\end{align*}
+
+Then $w \in L(\mathcal{B})$ iff we land in $F_1 \times F_2$, iff both components accept, iff $w \in L(\mathcal{B}^{(1)}) \cap L(\mathcal{B}^{(2)})$. \qed
+
+\paragraph{Part 4: $L(\mathcal{B}') = L(\mathcal{B}^{(1)}) \cup \overline{L(\mathcal{B}^{(2)})}$.}
+
+We reuse the same product automaton from Part~2 and just change which states are accepting. Complementing $\mathcal{B}^{(2)}$ flips its accept states: $\overline{F_2} = \{q_1, q_2\}$. For the union we accept when the first component accepts \emph{or} the second rejects:
+\[
+  F' = \{(p_i, q_j) : p_i \in F_1 \text{ or } q_j \notin F_2\}
+     = \{(p_i, q_j) : p_i = p_0 \text{ or } q_j \in \{q_1, q_2\}\}.
+\]
+
+That gives $F' = \{(p_0,q_0),\, (p_0,q_1),\, (p_0,q_2),\, (p_1,q_1),\, (p_1,q_2),\, (p_2,q_1),\, (p_2,q_2)\}$. Only $(p_1, q_0)$ and $(p_2, q_0)$ are non-accepting. By the same induction as Part~3, $w \in L(\mathcal{B}')$ iff $\hat\delta_1(p_0,w) \in F_1$ or $\hat\delta_2(q_0,w) \notin F_2$, which is $L(\mathcal{B}^{(1)}) \cup \overline{L(\mathcal{B}^{(2)})}$. \qed
+
+\subsubsection{Exploration}
+
+After some research I noticed that regex tools like \texttt{grep} and Python \texttt{re} have union (\texttt{|}) but no intersection or complement operator. The theory says these operations keep you inside regular languages, but the product construction squares the number of states, so most engines just skip it.
+
+\subsubsection{Questions}
+
+The complement of a DFA is easy (just flip accepting states). Why isn't there an equally simple trick for intersection without building the full product?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Synthesis}
 
 (approx 1 page, plus references)Section 2 gives you an opportunity to practice "skill drill" and to explore the material in more depth. The purpose of this section is to synthesize the knowledge you gained. Since Programming Languages is a wide field, it may be appropriate to focus on a particular topic of your choice. 
