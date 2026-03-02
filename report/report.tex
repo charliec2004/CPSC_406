@@ -550,6 +550,238 @@ The complement of a DFA is easy (just flip accepting states). Why isn't there an
 
 
 
+\subsection{Week 3}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Homework 1.}
+For the alphabet $\Sigma = \{a,b,c\}$, consider the following NFA $\mathcal{A}$:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial] (0) {$0$};
+  \node[state] (1) [right=of 0] {$1$};
+  \node[state, accepting] (2) [above right=of 1] {$2$};
+  \node[state, accepting] (3) [below right=of 1] {$3$};
+  \path[->]
+    (0) edge [loop above] node {$a,b$} ()
+        edge node {$a$} (1)
+    (1) edge node {$b$} (2)
+        edge node [swap] {$c$} (3);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Part 1: Regular expression.}
+State $0$ loops on $a$ and $b$, so we can read any string of $a$'s and $b$'s while staying in $0$. Then reading $a$ nondeterministically moves to $1$, and from $1$ we read $b$ to reach accepting state $2$ or $c$ to reach accepting state $3$. There are no transitions out of $2$ or $3$, and no $c$-transition from $0$. So the language is all words over $\{a,b,c\}$ that end with $ab$ or $ac$:
+\[
+  L(\mathcal{A}) = (a+b)^*\cdot a \cdot (b+c).
+\]
+
+\paragraph{Part 2: NFA specification.}
+$\mathcal{A} = (Q, \Sigma, \delta, q_0, F)$ where:
+\begin{itemize}
+  \item $Q = \{0, 1, 2, 3\}$
+  \item $\Sigma = \{a, b, c\}$
+  \item $q_0 = 0$
+  \item $F = \{2, 3\}$
+  \item The transition function $\delta \colon Q \times \Sigma \to \mathcal{P}(Q)$ is:
+\end{itemize}
+\begin{center}
+\begin{tabular}{c|ccc}
+ & $a$ & $b$ & $c$ \\ \hline
+$0$ & $\{0,1\}$ & $\{0\}$ & $\emptyset$ \\
+$1$ & $\emptyset$ & $\{2\}$ & $\{3\}$ \\
+$2$ & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
+$3$ & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
+\end{tabular}
+\end{center}
+
+\paragraph{Part 3: All paths for $v = abab$.}
+We trace all paths that process the full word $v = abab$. Paths that get stuck early are omitted.
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.8cm, auto, >=stealth']
+  \node (start) {$0$};
+  \node (a1) [right=of start] {$0$};
+  \node (a2) [right=of a1] {$0$};
+  \node (a3) [right=of a2] {$0$};
+  \node (a4) [right=of a3] {$0$};
+  \node (b3) [above right=0.8cm and 1.8cm of a2] {$1$};
+  \node (b4) [right=of b3] {$2$};
+  \path[->]
+    (start) edge node {$a$} (a1)
+    (a1) edge node {$b$} (a2)
+    (a2) edge node {$a$} (a3)
+    (a3) edge node {$b$} (a4)
+    (a2) edge node {$a$} (b3)
+    (b3) edge node {$b$} (b4);
+\end{tikzpicture}
+\end{center}
+
+There are two complete paths:
+\begin{enumerate}
+  \item $0 \xrightarrow{a} 0 \xrightarrow{b} 0 \xrightarrow{a} 0 \xrightarrow{b} 0$ \quad (not accepting)
+  \item $0 \xrightarrow{a} 0 \xrightarrow{b} 0 \xrightarrow{a} 1 \xrightarrow{b} 2$ \quad (accepting)
+\end{enumerate}
+Since at least one path ends in an accepting state, $v = abab$ is accepted by $\mathcal{A}$.
+
+\paragraph{Part 4: Power set construction.}
+Starting from $\{0\}$ and building reachable states:
+
+\begin{center}
+\begin{tabular}{c|ccc}
+ & $a$ & $b$ & $c$ \\ \hline
+$\to \{0\}$ & $\{0,1\}$ & $\{0\}$ & $\emptyset$ \\
+$\{0,1\}$ & $\{0,1\}$ & $\{0,2\}$ & $\{3\}$ \\
+$*\{0,2\}$ & $\{0,1\}$ & $\{0\}$ & $\emptyset$ \\
+$*\{3\}$ & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
+$\emptyset$ & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
+\end{tabular}
+\end{center}
+
+States containing $2$ or $3$ are accepting: $\{0,2\}$ and $\{3\}$. The trap state $\emptyset$ appears because $\delta(0,c) = \emptyset$. The DFA $\mathcal{A}^{\mathrm{D}}$:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.8cm,on grid,auto,
+  every state/.style={minimum size=1cm, inner sep=1pt, font=\footnotesize}]
+  \node[state, initial] (s0) {$\{0\}$};
+  \node[state] (s01) [right=of s0] {$\{0,1\}$};
+  \node[state, accepting] (s02) [above right=1.5cm and 2.8cm of s01] {$\{0,2\}$};
+  \node[state, accepting] (s3) [below right=1.5cm and 2.8cm of s01] {$\{3\}$};
+  \node[state] (se) [right=2.8cm of s3] {$\emptyset$};
+  \path[->]
+    (s0) edge node {$a$} (s01)
+         edge [loop above] node {$b$} ()
+         edge [bend right=20] node [swap] {$c$} (se)
+    (s01) edge [loop above] node {$a$} ()
+          edge node {$b$} (s02)
+          edge node [swap] {$c$} (s3)
+    (s02) edge [bend left] node {$a$} (s01)
+          edge [bend left=50] node {$b$} (s0)
+          edge node {$c$} (se)
+    (s3) edge node {$a,b,c$} (se)
+    (se) edge [loop right] node {$a,b,c$} ();
+\end{tikzpicture}
+\end{center}
+
+\bigskip
+
+\textbf{Homework 2.}
+For the alphabet $\Sigma = \{0,1\}$, consider the following NFA $\mathcal{A}$:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial] (q0) {$q_0$};
+  \node[state] (q1) [right=of q0] {$q_1$};
+  \node[state] (q2) [right=of q1] {$q_2$};
+  \node[state, accepting] (q3) [right=of q2] {$q_3$};
+  \path[->]
+    (q0) edge [loop above] node {$0,1$} ()
+         edge node {$1$} (q1)
+    (q1) edge node {$0$} (q2)
+    (q2) edge node {$0$} (q3)
+         edge [bend left] node [swap] {$1$} (q1)
+    (q3) edge [loop above] node {$0,1$} ();
+\end{tikzpicture}
+\end{center}
+
+The NFA has $Q = \{q_0, q_1, q_2, q_3\}$, start state $q_0$, accepting state $q_3$, and transitions:
+\begin{center}
+\begin{tabular}{c|cc}
+ & $0$ & $1$ \\ \hline
+$q_0$ & $\{q_0\}$ & $\{q_0, q_1\}$ \\
+$q_1$ & $\{q_2\}$ & $\emptyset$ \\
+$q_2$ & $\{q_3\}$ & $\{q_1\}$ \\
+$q_3$ & $\{q_3\}$ & $\{q_3\}$ \\
+\end{tabular}
+\end{center}
+
+The NFA nondeterministically guesses where the substring $100$ starts. From $q_0$ it reads $1$ to enter $q_1$, then $0$ to $q_2$, then $0$ to accepting $q_3$. The $q_2 \to q_1$ transition on $1$ lets it retry, but $q_0$'s self-loop already handles restarting. So $L(\mathcal{A})$ is the set of all words over $\{0,1\}$ containing $100$ as a substring.
+
+\paragraph{Part 1: Power set construction.}
+Building reachable states from $\{q_0\}$:
+
+\begin{center}
+\begin{tabular}{c|cc}
+ & $0$ & $1$ \\ \hline
+$\to \{q_0\}$ & $\{q_0\}$ & $\{q_0, q_1\}$ \\
+$\{q_0, q_1\}$ & $\{q_0, q_2\}$ & $\{q_0, q_1\}$ \\
+$\{q_0, q_2\}$ & $\{q_0, q_3\}$ & $\{q_0, q_1\}$ \\
+$*\{q_0, q_3\}$ & $\{q_0, q_3\}$ & $\{q_0, q_1, q_3\}$ \\
+$*\{q_0, q_1, q_3\}$ & $\{q_0, q_2, q_3\}$ & $\{q_0, q_1, q_3\}$ \\
+$*\{q_0, q_2, q_3\}$ & $\{q_0, q_3\}$ & $\{q_0, q_1, q_3\}$ \\
+\end{tabular}
+\end{center}
+
+States containing $q_3$ are accepting. The DFA $\mathcal{A}^{\mathrm{D}}$ has 6 reachable states:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=3cm,on grid,auto,
+  every state/.style={minimum size=1cm, inner sep=0pt, font=\footnotesize}]
+  \node[state, initial] (A) {$\{q_0\}$};
+  \node[state] (B) [right=of A] {$\{q_0 q_1\}$};
+  \node[state] (C) [right=of B] {$\{q_0 q_2\}$};
+  \node[state, accepting] (D) [below=2.5cm of A] {$\{q_0 q_3\}$};
+  \node[state, accepting] (E) [right=of D] {$\{q_0 q_1 q_3\}$};
+  \node[state, accepting] (F) [right=of E] {$\{q_0 q_2 q_3\}$};
+  \path[->]
+    (A) edge [loop above] node {$0$} ()
+        edge node {$1$} (B)
+    (B) edge node {$0$} (C)
+        edge [loop above] node {$1$} ()
+    (C) edge node [swap] {$0$} (D)
+        edge [bend right=15] node [swap] {$1$} (B)
+    (D) edge [loop below] node {$0$} ()
+        edge node {$1$} (E)
+    (E) edge node {$0$} (F)
+        edge [loop below] node {$1$} ()
+    (F) edge [bend right=15] node {$0$} (D)
+        edge [bend left=15] node [swap] {$1$} (E);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Part 2: A smaller DFA.}
+Yes. Since the language is ``contains $100$,'' we just need to track how much of the pattern $100$ we have matched so far. This gives a 4-state DFA:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial] (s0) {$s_0$};
+  \node[state] (s1) [right=of s0] {$s_1$};
+  \node[state] (s2) [right=of s1] {$s_2$};
+  \node[state, accepting] (s3) [right=of s2] {$s_3$};
+  \path[->]
+    (s0) edge [loop above] node {$0$} ()
+         edge node {$1$} (s1)
+    (s1) edge node {$0$} (s2)
+         edge [loop above] node {$1$} ()
+    (s2) edge node {$0$} (s3)
+         edge [bend left] node [swap] {$1$} (s1)
+    (s3) edge [loop above] node {$0,1$} ();
+\end{tikzpicture}
+\end{center}
+
+Here $s_0$ means no progress, $s_1$ means the last character was $1$, $s_2$ means the last two were $10$, and $s_3$ means we found $100$. This DFA has 4 states compared to the 6 from the power set construction. The two extra states in $\mathcal{A}^{\mathrm{D}}$ come from tracking NFA-specific information (which subset of $\{q_0, q_1, q_2, q_3\}$ we are in) that is not needed once we realize the language is just ``contains $100$.''
+
+\subsubsection{Exploration}
+
+The power set construction is pretty straightforward, you just follow the steps and you get a DFA. But it doesn't always give you the smallest one. In Homework 2 I got 6 states, but a DFA I built by hand only needed 4.
+
+NFAs also seem way easier to design than DFAs. You just think about one pattern at a time and let the nondeterminism figure out the rest. Then you can always convert to a DFA afterward if you need to.
+
+\subsubsection{Questions}
+
+The power set construction gave us 5 states for Homework 1 and 6 for Homework 2, but the NFAs only had 4 states each. When does the DFA end up smaller than the NFA, and when does it end up bigger?
+
+
+
+
+
+
+
 
 
 
