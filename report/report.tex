@@ -790,6 +790,175 @@ The power set construction gave us 5 states for Homework 1 and 6 for Homework 2,
 
 
 
+\subsection{Week 4}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Exercise 1 (Kleene's Algorithm).}
+Given a DFA with states $1$ (start) and $2$, both accepting, over $\Sigma = \{a, b\}$:
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial, accepting] (p) {$1$};
+  \node[state, accepting] (q) [right=of p] {$2$};
+  \path[->]
+    (p) edge [loop above] node {$a$} ()
+        edge [bend left] node {$b$} (q)
+    (q) edge [bend left] node {$a$} (p)
+        edge [loop above] node {$b$} ();
+\end{tikzpicture}
+\end{center}
+
+Applying Kleene's algorithm with $n = 2$ states using $R^{(k)}_{ij} = R^{(k-1)}_{ij} + R^{(k-1)}_{ik}(R^{(k-1)}_{kk})^* R^{(k-1)}_{kj}$.
+
+\paragraph{Base case ($k = 0$).}
+\begin{align*}
+  R^{(0)}_{11} &= \varepsilon + a, &
+  R^{(0)}_{12} &= b, \\
+  R^{(0)}_{21} &= a, &
+  R^{(0)}_{22} &= \varepsilon + b.
+\end{align*}
+
+\paragraph{Induction $k = 1$ (through state 1).}
+\begin{align*}
+  R^{(1)}_{11}
+    &= (\varepsilon + a) + (\varepsilon + a)(\varepsilon + a)^*(\varepsilon + a)
+    = a^*, \\
+  R^{(1)}_{12}
+    &= b + (\varepsilon + a)(\varepsilon + a)^* b
+    = a^* b, \\
+  R^{(1)}_{21}
+    &= a + a(\varepsilon + a)^*(\varepsilon + a)
+    = aa^*, \\
+  R^{(1)}_{22}
+    &= (\varepsilon + b) + a(\varepsilon + a)^* b
+    = \varepsilon + a^* b.
+\end{align*}
+
+\paragraph{Induction $k = 2$ (through states 1 and 2).}
+Using $(\varepsilon + a^*b)^* = (a^*b)^*$:
+\begin{align*}
+  R^{(2)}_{11}
+    &= a^* + a^* b \cdot (a^* b)^* \cdot aa^*, \\
+  R^{(2)}_{12}
+    &= a^* b + a^* b \cdot (a^* b)^* \cdot (\varepsilon + a^* b)
+    = (a^* b)^+.
+\end{align*}
+
+\paragraph{Final result.}
+Since $F = \{1, 2\}$: $R_{\mathcal{A}} = R^{(2)}_{11} + R^{(2)}_{12} = a^* + a^*b(a^*b)^*aa^* + (a^*b)^+$. These three terms cover strings of only $a$'s, strings with $b$'s ending in $a$, and strings ending in $b$, so $R_{\mathcal{A}} = (a + b)^*$. This makes sense since both states are accepting and the DFA is complete.
+
+\bigskip
+
+\textbf{Exercise 2 (ITALC 4.4.2: DFA Minimization).}
+DFA with states $\{A,\ldots,I\}$, start $A$, accepting $\{C, F, I\}$, over $\Sigma = \{0, 1\}$:
+
+\begin{center}
+\begin{tabular}{c|cc}
+ & $0$ & $1$ \\ \hline
+$\to A$ & $B$ & $E$ \\
+$B$ & $C$ & $F$ \\
+${}^*C$ & $D$ & $H$ \\
+$D$ & $E$ & $H$ \\
+$E$ & $F$ & $I$ \\
+${}^*F$ & $G$ & $B$ \\
+$G$ & $H$ & $B$ \\
+$H$ & $I$ & $C$ \\
+${}^*I$ & $A$ & $E$ \\
+\end{tabular}
+\end{center}
+
+\paragraph{Part (a): Table of distinguishabilities.}
+
+\emph{Basis.} Mark all pairs where exactly one state is accepting ($6 \times 3 = 18$ marked pairs).
+
+\emph{Round 1.} Nine more pairs get marked because a successor on $0$ or $1$ hits an already-marked pair: $(A,B)$, $(A,E)$, $(A,H)$, $(B,D)$, $(B,G)$, $(D,E)$, $(D,H)$, $(E,G)$, $(G,H)$.
+
+\emph{Round 2.} The remaining 9 pairs all have successors within the unmarked set:
+
+\begin{center}
+\begin{tabular}{c|cc}
+Pair & on $0$ & on $1$ \\ \hline
+$(A,D)$ & $(B,E)$ & $(E,H)$ \\
+$(A,G)$ & $(B,H)$ & $(B,E)$ \\
+$(B,E)$ & $(C,F)$ & $(F,I)$ \\
+$(B,H)$ & $(C,I)$ & $(C,F)$ \\
+$(D,G)$ & $(E,H)$ & $(B,H)$ \\
+$(E,H)$ & $(F,I)$ & $(C,I)$ \\
+$(C,F)$ & $(D,G)$ & $(B,H)$ \\
+$(C,I)$ & $(A,D)$ & $(E,H)$ \\
+$(F,I)$ & $(A,G)$ & $(B,E)$ \\
+\end{tabular}
+\end{center}
+
+Fixed point. Equivalence classes: $\{A, D, G\}$, $\{B, E, H\}$, $\{C, F, I\}$.
+
+\paragraph{Part (b): Minimum-state DFA.}
+Let $S_0 = \{A, D, G\}$, $S_1 = \{B, E, H\}$, $S_2 = \{C, F, I\}$. Start $S_0$, accepting $S_2$.
+
+\begin{center}
+\begin{tabular}{c|cc}
+ & $0$ & $1$ \\ \hline
+$\to S_0$ & $S_1$ & $S_1$ \\
+$S_1$ & $S_2$ & $S_2$ \\
+${}^*S_2$ & $S_0$ & $S_1$ \\
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto]
+  \node[state, initial] (S0) {$S_0$};
+  \node[state] (S1) [right=of S0] {$S_1$};
+  \node[state, accepting] (S2) [right=of S1] {$S_2$};
+  \path[->]
+    (S0) edge node {$0,1$} (S1)
+    (S1) edge node {$0,1$} (S2)
+    (S2) edge [bend left=50] node {$0$} (S0)
+         edge [bend left] node [swap] {$1$} (S1);
+\end{tikzpicture}
+\end{center}
+
+Reduces from 9 states to 3. $S_0$ resets, $S_1$ is one step from accepting, $S_2$ accepts. From $S_2$, input $0$ cycles back to $S_0$ while $1$ goes to $S_1$.
+
+\subsubsection{Exploration}
+
+Kleene's algorithm gave a messy regex for a 2-state DFA that just accepts everything. At the same time, minimization took 9 states down to 3. One method tries to shrink the automaton, the other converts it to a regex that can blow up exponentially. Neither representation is always smaller, it depends on the language.
+
+\subsubsection{Questions}
+
+Is there a way to make Kleene's algorithm skip work when the answer is obviously simple, like when every state accepts?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
