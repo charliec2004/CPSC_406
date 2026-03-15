@@ -947,6 +947,105 @@ Is there a way to make Kleene's algorithm skip work when the answer is obviously
 
 
 
+\subsection{Week 5}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Exercise 5 (Pumping lemma).} Use the pumping lemma to prove that the following four languages are not regular.
+
+\paragraph{Language $L_1 = \{a^n b^m \mid n > m \geq 0\}$.}
+
+\emph{Assumption.} Suppose $L_1$ is regular with pumping length $p$.
+
+\emph{Pumping.} Choose $w = a^{p+1} b^p$. Since $p+1 > p$, we have $w \in L_1$ and $|w| = 2p+1 \geq p$. By condition~2, $|xy| \leq p$, so $xy$ lies entirely within the leading $a$'s. Write $y = a^t$ with $t \geq 1$. Pump down with $k = 0$:
+\[
+  xz = a^{p+1-t}\, b^p.
+\]
+Since $t \geq 1$, the number of $a$'s satisfies $p+1-t \leq p$, so $xz \notin L_1$.
+
+\emph{Contradiction.} The pumping lemma requires $xy^k z \in L_1$ for all $k \geq 0$, but $xz \notin L_1$. Therefore $L_1$ is not regular. \qed
+
+\paragraph{Language $L_2 = \{a^{n^2} \mid n \geq 1\}$.}
+
+\emph{Assumption.} Suppose $L_2$ is regular with pumping length $p$.
+
+\emph{Pumping.} Choose $w = a^{p^2}$. Then $w \in L_2$ and $|w| = p^2 \geq p$. By condition~2, $|y| \leq p$. Let $|y| = t$ with $1 \leq t \leq p$. Pump up with $k = 2$:
+\[
+  |xy^2 z| = p^2 + t.
+\]
+Since $1 \leq t \leq p$, we have $p^2 < p^2 + t \leq p^2 + p < p^2 + 2p + 1 = (p+1)^2$. So $p^2 + t$ is strictly between consecutive perfect squares and is not itself a perfect square, meaning $xy^2 z \notin L_2$.
+
+\emph{Contradiction.} The pumping lemma is violated, so $L_2$ is not regular. \qed
+
+\paragraph{Language $L_3 = \{a^p \mid p \text{ is prime}\}$.}
+
+\emph{Assumption.} Suppose $L_3$ is regular with pumping length $n$.
+
+\emph{Pumping.} Pick a prime $q \geq n + 2$ and set $w = a^q$. Then $w \in L_3$ and $|w| = q \geq n$. Let $|y| = t$ with $1 \leq t \leq n$. Pump with $k = q + 1$:
+\[
+  |xy^{q+1} z| = q + qt = q(1 + t).
+\]
+Since $t \geq 1$ we have $1 + t \geq 2$, and since $q \geq 3$, both $q \geq 3$ and $1+t \geq 2$, so $q(1+t)$ is composite. So $xy^{q+1} z \notin L_3$.
+
+\emph{Contradiction.} The pumping lemma is violated, so $L_3$ is not regular. \qed
+
+\paragraph{Language $L_4 = \{a^k b^m a^{k+m} \mid k, m \geq 0\}$.}
+
+\emph{Assumption.} Suppose $L_4$ is regular with pumping length $n$.
+
+\emph{Pumping.} Choose $w = a^n b^n a^{2n}$. With $k = m = n$ we have $k + m = 2n$, so $w \in L_4$ and $|w| = 4n \geq n$. By condition~2, $|xy| \leq n$, so $xy$ lies entirely in the first $a^n$ block. Write $y = a^t$ with $t \geq 1$. Pump up with $k = 2$:
+\[
+  xy^2 z = a^{n+t}\, b^n\, a^{2n}.
+\]
+If $xy^2 z \in L_4$ then the trailing $a$-block has to equal the leading $a$-block plus the $b$-block, so $2n = (n + t) + n = 2n + t$, which gives $t = 0$. But $t \geq 1$.
+
+\emph{Contradiction.} The pumping lemma is violated, so $L_4$ is not regular. \qed
+
+\subsubsection{Exploration}
+
+All four languages fail the pumping lemma because a DFA can't count. Finitely many states means it eventually loops and forgets how far in it is.
+
+The fix is adding a stack. For $a^n b^n$, push on every $a$, pop on every $b$, accept if the stack empties. That's a pushdown automaton. $L_1$ and $L_4$ work the same way.
+
+$L_2$ and $L_3$ are different. Checking perfect squares or primes takes more than a stack. Those need a Turing machine.
+
+\subsubsection{Questions}
+
+The pumping lemma can prove a language isn't regular, but it can't confirm one is regular. Is there a tool that works in both directions?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
