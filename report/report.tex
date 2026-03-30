@@ -1031,6 +1031,126 @@ The pumping lemma can prove a language isn't regular, but it can't confirm one i
 
 
 
+\subsection{Week 6}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Problem A (Turing Machines).}
+Design Turing machines for the following three tasks over $\Sigma = \{0,1\}$.
+
+\paragraph{A1: Accept $L = \{10^n : n \in \mathbb{N}\}$ and return $10^{n+1}$.}
+
+The machine verifies the input starts with $1$ followed by only $0$'s, then appends an extra $0$ at the end.
+
+States: $q_0$ (start), $q_1$ (scanning $0$'s), $q_3$ (accept). $F = \{q_3\}$.
+
+\begin{center}
+\begin{tabular}{c|ccc}
+$\delta$ & $0$ & $1$ & $B$ \\ \hline
+$q_0$ & --- & $(q_1, 1, R)$ & --- \\
+$q_1$ & $(q_1, 0, R)$ & --- & $(q_3, 0, R)$ \\
+${}^*q_3$ & --- & --- & --- \\
+\end{tabular}
+\end{center}
+
+\emph{Trace on input $100$ (i.e.\ $10^2$):}
+\[
+  q_0 100 \vdash 1q_1 00 \vdash 10q_1 0 \vdash 100q_1 B \vdash 1000q_3 B.
+\]
+Output: $1000 = 10^3$. The machine rejects anything not of the form $10^n$ because $q_0$ requires a $1$ first and $q_1$ only allows $0$'s.
+
+\paragraph{A2: Accept $L = \{10^n : n \in \mathbb{N}\}$ and return $1$.}
+
+The machine verifies the input is of the form $10^n$, then moves back left and erases all the $0$'s by overwriting them with blanks.
+
+States: $q_0$ (start), $q_1$ (scan right through $0$'s), $q_2$ (move left erasing $0$'s), $q_3$ (accept). $F = \{q_3\}$.
+
+\begin{center}
+\begin{tabular}{c|ccc}
+$\delta$ & $0$ & $1$ & $B$ \\ \hline
+$q_0$ & --- & $(q_1, 1, R)$ & --- \\
+$q_1$ & $(q_1, 0, R)$ & --- & $(q_2, B, L)$ \\
+$q_2$ & $(q_2, B, L)$ & $(q_3, 1, R)$ & --- \\
+${}^*q_3$ & --- & --- & --- \\
+\end{tabular}
+\end{center}
+
+\emph{Trace on input $100$:}
+\[
+  q_0 100 \vdash 1q_1 00 \vdash 10q_1 0 \vdash 100q_1 B \vdash 10q_2 0 \vdash 1q_2 B \vdash q_2 1 \vdash 1q_3 B.
+\]
+When $q_2$ reads $0$ it writes $B$ and moves left; when it reaches the $1$ it transitions to the accepting state $q_3$. Output: $1$.
+
+\paragraph{A3: Accept all binary strings and swap $0$'s and $1$'s.}
+
+The machine scans left to right, replacing every $0$ with $1$ and every $1$ with $0$, halting when it hits the first blank.
+
+States: $q_0$ (start/scan, also accepting). $F = \{q_0\}$.
+
+\begin{center}
+\begin{tabular}{c|ccc}
+$\delta$ & $0$ & $1$ & $B$ \\ \hline
+${}^*q_0$ & $(q_0, 1, R)$ & $(q_0, 0, R)$ & --- \\
+\end{tabular}
+\end{center}
+
+\emph{Trace on input $1010$:}
+\[
+  q_0 1010 \vdash 0q_0 010 \vdash 01q_0 10 \vdash 010q_0 0 \vdash 0101q_0 B.
+\]
+The machine halts in $q_0$ (accepting). Output: $0101$. This TM accepts every binary string since $q_0$ is the sole state and is accepting; it halts whenever it encounters $B$.
+
+\bigskip
+
+\textbf{Exercise 1 (Decidability).}
+For each statement, determine whether it is true or false. If true, give an argument; if false, give a counterexample.
+
+\paragraph{1. If $L_1$ and $L_2$ are decidable, then so is $L_1 \cup L_2$.}
+
+\emph{True.} Since $L_1$ and $L_2$ are decidable, there exist TMs $M_1$ and $M_2$ that always halt and decide them. Construct a TM $M$ for $L_1 \cup L_2$: on input $w$, run $M_1$ on $w$. If $M_1$ accepts, accept. If $M_1$ rejects, run $M_2$ on $w$. If $M_2$ accepts, accept; otherwise reject. $M$ always halts because both $M_1$ and $M_2$ always halt, and $M$ accepts $w$ iff $w \in L_1$ or $w \in L_2$. \qed
+
+\paragraph{2. If $L$ is decidable, then so is $\overline{L}$.}
+
+\emph{True.} Let $M$ be a TM that decides $L$ (always halts). Build $M'$ that runs $M$ on input $w$ and flips the answer: if $M$ accepts, $M'$ rejects; if $M$ rejects, $M'$ accepts. $M'$ always halts and accepts exactly the strings not in $L$. \qed
+
+\paragraph{3. If $L$ is decidable, then so is $L^*$.}
+
+\emph{True.} Since $L$ is decidable, we have a TM $M$ that decides $L$. Construct $M'$ for $L^*$: on input $w$ of length $n$, systematically try every way to partition $w$ into substrings $w_1 w_2 \cdots w_k$ (there are finitely many partitions, at most $2^{n-1}$ for a string of length $n$). For each partition, run $M$ on every piece $w_i$. If there exists a partition where $M$ accepts all pieces, accept. If no partition works, reject. Since $M$ always halts on every piece and there are finitely many partitions, $M'$ always halts. (Also, $\varepsilon \in L^*$ by definition, so $M'$ accepts $\varepsilon$ directly.) \qed
+
+\paragraph{4. If $L_1$ and $L_2$ are r.e., then $L_1 \cup L_2$ is r.e.}
+
+\emph{True.} Let $M_1$ recognize $L_1$ and $M_2$ recognize $L_2$. Build $M$: on input $w$, simulate $M_1$ and $M_2$ in parallel (dovetailing, alternating one step of $M_1$ with one step of $M_2$). If either machine ever accepts, $M$ accepts. If $w \in L_1 \cup L_2$, at least one of $M_1$ or $M_2$ will eventually accept, so $M$ accepts. If $w \notin L_1 \cup L_2$, $M$ may run forever, which is fine for r.e. \qed
+
+\paragraph{5. If $L$ is r.e., then so is $\overline{L}$.}
+
+\emph{False.} Counterexample: let $L = \{\langle M, w \rangle : M \text{ halts on input } w\}$ (the halting language). $L$ is r.e., just simulate $M$ on $w$, and accept if $M$ halts. However, $\overline{L}$ is not r.e. If both $L$ and $\overline{L}$ were r.e., we could run recognizers for $L$ and $\overline{L}$ in parallel; one must eventually accept, so $L$ would be decidable. But the halting problem is undecidable, contradiction. \qed
+
+\paragraph{6. If $L$ is r.e., then so is $L^*$.}
+
+\emph{True.} Let $M$ be a TM that recognizes $L$. Build $M'$: on input $w$, nondeterministically guess a partition of $w$ into substrings $w_1 w_2 \cdots w_k$, then simulate $M$ on each $w_i$ in parallel (dovetailing). If $M$ accepts all pieces, accept. If $w \in L^*$, there exists a partition where every piece is in $L$, and since $M$ recognizes $L$, it will eventually accept each piece, so $M'$ eventually accepts. Since nondeterministic TMs recognize exactly the r.e.\ languages, $L^*$ is r.e. \qed
+
+\subsubsection{Exploration}
+
+Turing machines are the natural next step after DFAs. The key difference is the read/write tape: a DFA can only move right and never change anything, but a TM can go back, erase, and write new symbols. That's enough to go from recognizing patterns to actually computing things.
+
+The decidability exercise shows that closure properties depend on how powerful your machines are. Decidable languages are closed under complement (just flip accept/reject), but r.e.\ languages are not. Flipping only works when the machine always halts. If a TM might loop forever on strings outside $L$, there's no answer to swap.
+
+\subsubsection{Questions}
+
+Is every non-r.e.\ language just the complement of some r.e.\ language, or are there languages that fall outside both classes entirely?
+
+
+
+
+
+
+
+
+
 
 
 
