@@ -1181,6 +1181,263 @@ Is every non-r.e.\ language just the complement of some r.e.\ language, or are t
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Week 7}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Exercise 2 (Classifying languages by decidability).}
+For each of the following languages, determine whether it is decidable, recursively enumerable (r.e.), or has recursively enumerable complement (co-r.e.).
+
+\paragraph{1. $L_1 = \{\langle M \rangle : M \text{ halts on input } \langle M \rangle\}$.}
+
+$L_1$ is r.e.\ but not decidable and not co-r.e.
+
+\emph{R.e.:} Construct a TM $R$ that, on input $\langle M \rangle$, simulates $M$ on $\langle M \rangle$. If the simulation halts, accept. If $M$ does not halt on itself, $R$ runs forever. This is a recognizer for $L_1$, so $L_1$ is r.e.
+
+\emph{Not decidable:} Suppose for contradiction that some decider $D$ decides $L_1$: on input $\langle M \rangle$, $D$ accepts if $M$ halts on $\langle M \rangle$ and rejects otherwise. Construct a new machine $H$: on input $\langle M \rangle$, run $D(\langle M \rangle)$; if $D$ accepts, loop forever; if $D$ rejects, halt and accept. Now consider $H$ on input $\langle H \rangle$. If $H$ halts on $\langle H \rangle$, then $D$ accepts, so $H$ loops. Contradiction. If $H$ does not halt on $\langle H \rangle$, then $D$ rejects, so $H$ halts. Contradiction. Both cases fail, so $D$ cannot exist. \qed
+
+\emph{Not co-r.e.:} If $L_1$ were both r.e.\ and co-r.e., it would be decidable (a language is decidable iff both it and its complement are r.e.). We showed $L_1$ is r.e.\ but not decidable, so $L_1$ can't be co-r.e.\ too. \qed
+
+\paragraph{2. $L_2 = \{(\langle M \rangle, w) : M \text{ halts on input } w\}$.}
+
+$L_2$ is the standard halting problem. It is r.e.\ but not decidable and not co-r.e.
+
+\emph{R.e.:} Construct a TM $R$ that, on input $(\langle M \rangle, w)$, simulates $M$ on $w$. If $M$ halts, accept. If $M$ loops, $R$ loops. So $R$ recognizes $L_2$.
+
+\emph{Not decidable:} Reduce from $L_1$. Given an instance $\langle M \rangle$ of $L_1$, construct the instance $(\langle M \rangle, \langle M \rangle)$ of $L_2$. Then $M$ halts on itself iff $(\langle M \rangle, \langle M \rangle) \in L_2$. If $L_2$ were decidable, we could decide $L_1$ by querying the $L_2$ decider on $(\langle M \rangle, \langle M \rangle)$. Since $L_1$ is undecidable, $L_2$ must be undecidable too. \qed
+
+\emph{Not co-r.e.:} Same reasoning as $L_1$: $L_2$ is r.e.\ but not decidable, so it can't be co-r.e.\ either. \qed
+
+\paragraph{3. $L_3 = \{(\langle M \rangle, w, k) : M \text{ halts on } w \text{ in at most } k \text{ steps}\}$.}
+
+$L_3$ is decidable, so it's r.e.\ and co-r.e.\ too
+
+\emph{Decidable:} Construct a TM $D$: on input $(\langle M \rangle, w, k)$, simulate $M$ on $w$ for at most $k$ steps. If $M$ halts within $k$ steps, accept. If $M$ has not halted after $k$ steps, reject. This machine always terminates because it runs for at most $k$ simulation steps before deciding. It accepts when $M$ halts on $w$ within $k$ steps, so $D$ decides $L_3$. \qed
+
+Unlike $L_2$, we're not asking ``does $M$ ever halt?'' (which might run forever) but ``does $M$ halt within a bounded number of steps?'' Bounded simulation always halts.
+
+\emph{R.e.\ and co-r.e.:} A decider is just a recognizer that also halts on non-members, so decidable implies r.e. Flip accept and reject to decide the complement, so decidable implies co-r.e.\ too. \qed
+
+\bigskip
+
+\textbf{Exercise 2 (Big O properties).}
+For non-negative functions $f, g, h \colon \mathbb{N} \to \mathbb{R}_{\geq 0}$, prove the following properties of Big O notation. Recall: $f \in \mathcal{O}(g)$ means there exist $N$ and $M > 0$ such that $f(n) \leq M \cdot g(n)$ for all $n \geq N$.
+
+\emph{Part 1: $f \in \mathcal{O}(f)$.}
+Choose $M = 1$ and $N = 0$. Then $f(n) \leq 1 \cdot f(n)$ for all $n \geq 0$, which obviously holds. So $f \in \mathcal{O}(f)$. \qed
+
+\emph{Part 2: $\mathcal{O}(c \cdot f) = \mathcal{O}(f)$ for any constant $c > 0$.}
+I show both inclusions. ($\subseteq$): If $h \in \mathcal{O}(c \cdot f)$, then $h(n) \leq M \cdot c \cdot f(n) = (Mc) \cdot f(n)$ for $n \geq N$, so $h \in \mathcal{O}(f)$. ($\supseteq$): If $h \in \mathcal{O}(f)$, then $h(n) \leq M \cdot f(n) = (M/c) \cdot c \cdot f(n)$ for $n \geq N$, so $h \in \mathcal{O}(c \cdot f)$. \qed
+
+\emph{Part 3: If $f \leq g$ for large enough inputs, then $\mathcal{O}(f) \subseteq \mathcal{O}(g)$.}
+Let $h \in \mathcal{O}(f)$, so $h(n) \leq M \cdot f(n)$ for $n \geq N_1$. Since $f(n) \leq g(n)$ for $n \geq N_2$. Set $N = \max(N_1, N_2)$. For all $n \geq N$:
+\[
+  h(n) \leq M \cdot f(n) \leq M \cdot g(n),
+\]
+so $h \in \mathcal{O}(g)$. \qed
+
+\emph{Part 4: If $\mathcal{O}(f) \subseteq \mathcal{O}(g)$, then $\mathcal{O}(f + h) \subseteq \mathcal{O}(g + h)$.}
+Since $f \in \mathcal{O}(f) \subseteq \mathcal{O}(g)$ (by Part~1), there exist $M_1, N_1$ with $f(n) \leq M_1 \cdot g(n)$ for $n \geq N_1$. Let $p \in \mathcal{O}(f + h)$, so $p(n) \leq M_2(f(n) + h(n))$ for $n \geq N_2$. Set $C = \max(M_1, 1)$ and $N = \max(N_1, N_2)$. For $n \geq N$:
+\[
+  p(n) \leq M_2(f(n) + h(n)) \leq M_2(M_1 g(n) + h(n)) \leq M_2 C \cdot (g(n) + h(n)),
+\]
+so $p \in \mathcal{O}(g + h)$. \qed
+
+\emph{Part 5: If $h(n) > 0$ for all $n$ and $\mathcal{O}(f) \subseteq \mathcal{O}(g)$, then $\mathcal{O}(f \cdot h) \subseteq \mathcal{O}(g \cdot h)$.}
+As in Part~4, $f \in \mathcal{O}(g)$ gives $f(n) \leq M_1 g(n)$ for $n \geq N_1$. Let $p \in \mathcal{O}(f \cdot h)$, so $p(n) \leq M_2 f(n) h(n)$ for $n \geq N_2$. Since $h(n) > 0$, multiplying $f(n) \leq M_1 g(n)$ by $h(n)$ keeps the inequality. For $n \geq \max(N_1, N_2)$:
+\[
+  p(n) \leq M_2 f(n) h(n) \leq M_2 M_1 g(n) h(n) = (M_1 M_2) \cdot g(n) h(n),
+\]
+so $p \in \mathcal{O}(g \cdot h)$. \qed
+
+\bigskip
+
+\textbf{Exercise 3 (Derived properties).}
+Using the properties from Exercise~2, prove the following for $n, j, k \in \mathbb{N}$.
+
+\emph{Part 1: If $j \leq k$, then $\mathcal{O}(n^j) \subseteq \mathcal{O}(n^k)$.}
+For $n \geq 1$, $j \leq k$ implies $n^j \leq n^k$. By Exercise~2 Part~3, $\mathcal{O}(n^j) \subseteq \mathcal{O}(n^k)$. \qed
+
+\emph{Part 2: If $j \leq k$, then $\mathcal{O}(n^j + n^k) \subseteq \mathcal{O}(n^k)$.}
+For $n \geq 1$, $n^j \leq n^k$ gives $n^j + n^k \leq 2n^k$. By Exercise~2 Part~3, $\mathcal{O}(n^j + n^k) \subseteq \mathcal{O}(2n^k)$. By Exercise~2 Part~2, $\mathcal{O}(2n^k) = \mathcal{O}(n^k)$. Putting those together, $\mathcal{O}(n^j + n^k) \subseteq \mathcal{O}(n^k)$. \qed
+
+\emph{Part 3: $\mathcal{O}\!\left(\sum_{i=0}^{k} a_i n^i\right) = \mathcal{O}(n^k)$, assuming $a_k > 0$.}
+($\subseteq$): For $n \geq 1$, each $n^i \leq n^k$ when $i \leq k$, so $\sum_{i=0}^{k} a_i n^i \leq \left(\sum_{i=0}^{k} |a_i|\right) n^k$. Let $C = \sum |a_i|$. By Parts~3 and~2, $\mathcal{O}(\text{poly}) \subseteq \mathcal{O}(Cn^k) = \mathcal{O}(n^k)$. ($\supseteq$): Since $a_k > 0$, for large enough $n$ the leading term dominates and $\sum a_i n^i \geq \frac{a_k}{2} n^k$, so $n^k \leq \frac{2}{a_k} \sum a_i n^i$, giving $\mathcal{O}(n^k) \subseteq \mathcal{O}(\text{poly})$. \qed
+
+\emph{Part 4: $\mathcal{O}(\log n) \subseteq \mathcal{O}(n)$.}
+For $n \geq 1$, $\log n \leq n$ (since $x - \ln x$ is increasing for $x \geq 1$ and starts positive). By Exercise~2 Part~3, $\mathcal{O}(\log n) \subseteq \mathcal{O}(n)$. \qed
+
+\emph{Part 5: $\mathcal{O}(n \log n) \subseteq \mathcal{O}(n^2)$.}
+From Part~4, $\mathcal{O}(\log n) \subseteq \mathcal{O}(n)$. The function $h(n) = n$ satisfies $h(n) > 0$. By Exercise~2 Part~5, $\mathcal{O}(n \cdot \log n) \subseteq \mathcal{O}(n \cdot n) = \mathcal{O}(n^2)$. \qed
+
+\bigskip
+
+\textbf{Exercise 4 (Comparing growth classes).}
+Determine the relationship between each pair and prove the claim.
+
+\paragraph{1. $\mathcal{O}(n)$ and $\mathcal{O}(\sqrt{n})$.}
+
+\emph{Claim:} $\mathcal{O}(\sqrt{n}) \subsetneq \mathcal{O}(n)$.
+
+$\mathcal{O}(\sqrt{n}) \subseteq \mathcal{O}(n)$: For $n \geq 1$, $\sqrt{n} \leq n$, so by Exercise~2 Part~3 we are done.
+
+$n \notin \mathcal{O}(\sqrt{n})$: Suppose $n \leq M\sqrt{n}$ for all $n \geq N$. Dividing by $\sqrt{n}$ gives $\sqrt{n} \leq M$ for all large $n$, but $\sqrt{n} \to \infty$ and $M$ is a constant, contradiction. So $\mathcal{O}(n) \not\subseteq \mathcal{O}(\sqrt{n})$ and the inclusion is strict. \qed
+
+\paragraph{2. $\mathcal{O}(n^2)$ and $\mathcal{O}(2^n)$.}
+
+\emph{Claim:} $\mathcal{O}(n^2) \subsetneq \mathcal{O}(2^n)$.
+
+$\mathcal{O}(n^2) \subseteq \mathcal{O}(2^n)$: Polynomials always lose to exponentials eventually. $\lim_{n \to \infty} n^2 / 2^n = 0$, so $n^2 \leq 2^n$ for large enough $n$, and Exercise~2 Part~3 gives the inclusion.
+
+$2^n \notin \mathcal{O}(n^2)$: Suppose $2^n \leq Mn^2$ for all $n \geq N$. Then $2^n / n^2 \leq M$, but $2^n / n^2 \to \infty$, contradiction. \qed
+
+\paragraph{3. $\mathcal{O}(\log n)$ and $\mathcal{O}(\log^2 n)$.}
+
+\emph{Claim:} $\mathcal{O}(\log n) \subsetneq \mathcal{O}(\log^2 n)$.
+
+$\mathcal{O}(\log n) \subseteq \mathcal{O}(\log^2 n)$: For $n \geq e$ (so that $\log n \geq 1$), we have $\log n \leq \log n \cdot \log n = \log^2 n$. By Exercise~2 Part~3, the inclusion holds.
+
+$\log^2 n \notin \mathcal{O}(\log n)$: Suppose $\log^2 n \leq M \log n$ for all large $n$. Dividing by $\log n$ gives $\log n \leq M$, but $\log n \to \infty$, contradiction. \qed
+
+\paragraph{4. $\mathcal{O}(2^n)$ and $\mathcal{O}(3^n)$.}
+
+\emph{Claim:} $\mathcal{O}(2^n) \subsetneq \mathcal{O}(3^n)$.
+
+$\mathcal{O}(2^n) \subseteq \mathcal{O}(3^n)$: $2^n \leq 3^n$ for all $n \geq 0$ since $2 \leq 3$. By Exercise~2 Part~3, done.
+
+$3^n \notin \mathcal{O}(2^n)$: Suppose $3^n \leq M \cdot 2^n$ for all $n \geq N$. Then $(3/2)^n \leq M$, but $(3/2)^n \to \infty$, contradiction. \qed
+
+\paragraph{5. $\mathcal{O}(\log_2 n)$ and $\mathcal{O}(\log_3 n)$.}
+
+\emph{Claim:} $\mathcal{O}(\log_2 n) = \mathcal{O}(\log_3 n)$.
+
+By the change-of-base formula, $\log_2 n = \frac{\log_3 n}{\log_3 2} = c \cdot \log_3 n$ where $c = 1/\log_3 2 > 0$ is a constant. By Exercise~2 Part~2, $\mathcal{O}(c \cdot \log_3 n) = \mathcal{O}(\log_3 n)$. So $\mathcal{O}(\log_2 n) = \mathcal{O}(\log_3 n)$. That's why we just write $\mathcal{O}(\log n)$ without a base. Different log bases only differ by a constant, and Big O absorbs constants. \qed
+
+\bigskip
+
+\textbf{Exercise 5 (Sorting runtimes).}
+Compare the runtimes of the following pairs of sorting algorithms using what we know about growth classes.
+
+\paragraph{Bubble sort vs.\ insertion sort.}
+
+Both have worst-case runtime $\mathcal{O}(n^2)$, so asymptotically they're the same. Bubble sort repeatedly swaps adjacent elements; insertion sort builds a sorted prefix one element at a time. Big O can't tell them apart. In practice, insertion sort tends to be faster because it makes fewer swaps and runs in $\mathcal{O}(n)$ on nearly-sorted inputs, while bubble sort still performs $\mathcal{O}(n^2)$ comparisons in most cases. Big O hides constant factors and best-case behavior though.
+
+\paragraph{Insertion sort vs.\ merge sort.}
+
+This is where Big O actually separates them. Insertion sort is $\Theta(n^2)$ worst case, merge sort is $\Theta(n \log n)$. Since $\mathcal{O}(n \log n) \subsetneq \mathcal{O}(n^2)$ (Exercise~3 Part~5), merge sort is in a strictly better class. For large inputs, merge sort always wins. For small inputs, insertion sort can be faster since there's no recursion or extra arrays. That's why Timsort uses insertion sort on small subarrays and merge sort for the rest.
+
+\paragraph{Merge sort vs.\ quick sort.}
+
+This one depends on which runtime measure we care about. Worst case, merge sort is $\Theta(n \log n)$ while quick sort is $\Theta(n^2)$ (when the pivot is always the smallest or largest element), so merge sort wins there. But in the average case (random pivot), quick sort is also $\Theta(n \log n)$, matching merge sort asymptotically. In practice quick sort is often faster due to better cache locality and smaller constant factors. Quick sort also uses $\mathcal{O}(\log n)$ auxiliary space (in-place, with tail-call optimization) compared to merge sort's $\mathcal{O}(n)$. So Big O alone doesn't settle which algorithm is ``better''; it depends on which metric matters and on the expected input distribution.
+
+\subsubsection{Exploration}
+
+Big O and decidability are both about drawing lines between things. Decidability asks ``can this be solved at all?'' and Big O asks ``how fast can we solve it?'' The $L_3$ exercise ties them together nicely: bounding the number of steps turns an undecidable problem into a decidable one. That's basically what Big O does too, it throws away the exact details and just keeps the shape of the growth.
+
+The log base result from Exercise 4 is a good example of how aggressive that throwing-away is. $\log_2$ and $\log_3$ are different functions, but Big O says they're the same because the difference is just a constant. That's the whole point of the notation: ignore anything that doesn't change the growth rate.
+
+\subsubsection{Questions}
+
+Big O can't distinguish merge sort from quick sort in the average case. Is there a standard notation that also captures things like cache performance, or do people just benchmark?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Synthesis}
 
 (approx 1 page, plus references)Section 2 gives you an opportunity to practice "skill drill" and to explore the material in more depth. The purpose of this section is to synthesize the knowledge you gained. Since Programming Languages is a wide field, it may be appropriate to focus on a particular topic of your choice. 
