@@ -1407,6 +1407,141 @@ Big O can't distinguish merge sort from quick sort in the average case. Is there
 
 
 
+\subsection{Week 8}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Exercise 1 (CNF Conversion).}
+Rewrite the following formulas in conjunctive normal form (CNF). Recall that a formula is in CNF if it is a conjunction of clauses, where each clause is a disjunction of literals.
+
+\paragraph{Part 1: $\varphi_1 := \lnot((a \land b) \lor (\lnot c \land d))$.}
+
+Apply De Morgan's law to the outer negation, $\lnot(A \lor B) \equiv \lnot A \land \lnot B$:
+\[
+  \lnot((a \land b) \lor (\lnot c \land d)) = \lnot(a \land b) \land \lnot(\lnot c \land d).
+\]
+Apply De Morgan's again to each conjunct, $\lnot(A \land B) \equiv \lnot A \lor \lnot B$:
+\[
+  = (\lnot a \lor \lnot b) \land (c \lor \lnot d).
+\]
+This is already in CNF: two clauses, each a disjunction of literals.
+
+\paragraph{Part 2: $\varphi_2 := \lnot((p \lor q) \to (r \land \lnot s))$.}
+
+First expand the implication using $A \to B := \lnot A \lor B$:
+\[
+  (p \lor q) \to (r \land \lnot s) = \lnot(p \lor q) \lor (r \land \lnot s).
+\]
+So $\varphi_2 = \lnot\bigl(\lnot(p \lor q) \lor (r \land \lnot s)\bigr)$. Apply De Morgan's:
+\[
+  = \lnot\lnot(p \lor q) \land \lnot(r \land \lnot s).
+\]
+Double negation elimination on the first part, De Morgan's on the second:
+\[
+  = (p \lor q) \land (\lnot r \lor s).
+\]
+Already in CNF: two clauses.
+
+\bigskip
+
+\textbf{Exercise 2 (Satisfiability).}
+For each formula, determine whether it is satisfiable. If yes, give a satisfying assignment. If not, explain why no assignment exists.
+
+\paragraph{Part 1: $\psi_1 := (a \lor \lnot b) \land (\lnot a \lor b) \land (\lnot a \lor \lnot b)$.}
+
+Already in CNF with two variables and three clauses. Check all four assignments:
+
+\begin{center}
+\begin{tabular}{cc|ccc|c}
+$a$ & $b$ & $(a \lor \lnot b)$ & $(\lnot a \lor b)$ & $(\lnot a \lor \lnot b)$ & $\psi_1$ \\ \hline
+$0$ & $0$ & $1$ & $1$ & $1$ & $\mathbf{1}$ \\
+$0$ & $1$ & $0$ & $1$ & $1$ & $0$ \\
+$1$ & $0$ & $1$ & $0$ & $1$ & $0$ \\
+$1$ & $1$ & $1$ & $1$ & $0$ & $0$ \\
+\end{tabular}
+\end{center}
+
+\emph{Satisfiable.} The unique satisfying assignment is $\mathfrak{J}(a) = 0$, $\mathfrak{J}(b) = 0$.
+
+\paragraph{Part 2: $\psi_2 := (\lnot p \lor q) \land (\lnot q \lor r) \land \lnot(\lnot p \lor r)$.}
+
+First simplify the third conjunct using De Morgan's law:
+\[
+  \lnot(\lnot p \lor r) = p \land \lnot r.
+\]
+So $\psi_2 = (\lnot p \lor q) \land (\lnot q \lor r) \land p \land \lnot r$. Now propagate the unit clauses:
+\begin{itemize}
+  \item From $p$: we must have $p = 1$.
+  \item From $\lnot r$: we must have $r = 0$.
+  \item Substituting $r = 0$ into $(\lnot q \lor r)$ gives $\lnot q$, so $q = 0$.
+  \item Substituting $p = 1$, $q = 0$ into $(\lnot p \lor q)$ gives $(0 \lor 0) = 0$. Contradiction.
+\end{itemize}
+
+\emph{Not satisfiable.} The unit clauses force $p = 1$, $r = 0$, $q = 0$, which falsifies $(\lnot p \lor q)$. No assignment can make all four conjuncts true simultaneously.
+
+\paragraph{Part 3: $\psi_3 := (x \lor y) \land (\lnot x \lor y) \land (x \lor \lnot y) \land (\lnot x \lor \lnot y)$.}
+
+Use resolution. Resolving clauses 1 and 2 on $x$:
+\[
+  (x \lor y) \land (\lnot x \lor y) \implies y.
+\]
+Resolving clauses 3 and 4 on $x$:
+\[
+  (x \lor \lnot y) \land (\lnot x \lor \lnot y) \implies \lnot y.
+\]
+The first pair forces $y = 1$ and the second forces $y = 0$. Contradiction.
+
+\emph{Not satisfiable.} You can also verify by checking all four assignments of $(x, y)$; each one falsifies at least one clause.
+
+\subsubsection{Exploration}
+
+Decidability asks whether a problem can be solved at all. Complexity asks how long the solution
+takes. P and NP both sit inside the decidable languages, but the distinction between them is
+about polynomial time versus brute-force search. A problem being decidable doesn't mean much
+if the best algorithm takes $2^n$ steps.
+
+The homework exercises were small enough to solve by hand. Two or three variables means four or
+eight rows in a truth table. But SAT in general has $n$ variables and $2^n$ possible assignments.
+Last week we showed that exponentials dominate polynomials
+($\mathcal{O}(n^k) \subsetneq \mathcal{O}(2^n)$), and that gap is exactly why SAT is considered
+intractable. Real SAT instances have thousands of variables, and brute force stops being
+feasible fast.
+
+Converting a formula to CNF is mechanical: just apply De Morgan's laws and double negation
+elimination. That matters because SAT solvers assume CNF input. The conversion itself is cheap,
+so the bottleneck is always the solving, not the preprocessing. The Cook-Levin theorem says
+that bottleneck is as hard as any problem in NP.
+
+\subsubsection{Questions}
+
+SAT is NP-complete, so no known algorithm solves it in polynomial time. Why do SAT solvers work so well in practice if the worst case is exponential?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
