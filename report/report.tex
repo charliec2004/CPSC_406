@@ -1790,6 +1790,129 @@ Exercise 2 turned an English safety policy into clauses. Different people would 
 
 
 
+\subsection{Week 10}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Exercise 4.3-1.}
+Show that $T(n) = T(n-1) + n$ has solution $O(n^2)$ using the substitution method.
+
+Guess $T(n) \le cn^2$ for some constant $c > 0$.
+
+\paragraph{Inductive step.} Assume $T(n-1) \le c(n-1)^2$. Substitute into the recurrence:
+\[
+  T(n) \le c(n-1)^2 + n = cn^2 - 2cn + c + n = cn^2 - (2c-1)n + c.
+\]
+For this to be $\le cn^2$, I need $(2c-1)n \ge c$. Pick $c = 1$: the condition becomes $n \ge 1$, which is fine.
+
+\paragraph{Base case.} $T(1)$ is some constant. Need $T(1) \le c \cdot 1^2 = c$, so pick $c = \max(1, T(1))$.
+
+So $T(n) \le cn^2$ for all $n \ge 1$, hence $T(n) = O(n^2)$.
+
+\emph{Sanity check.} Unrolling gives $T(n) = T(0) + (1 + 2 + \cdots + n) = T(0) + n(n+1)/2$, which is $\Theta(n^2)$. The bound is tight.
+
+\bigskip
+
+\textbf{Exercise 4.3-2.}
+Show that $T(n) = T(\lceil n/2 \rceil) + 1$ has solution $O(\lg n)$.
+
+Guess $T(n) \le c \lg n$. Since $\lg 1 = 0$, defer the boundary by proving the bound for $n \ge 2$.
+
+\paragraph{Inductive step, $n$ even, $n \ge 2$.} Here $\lceil n/2 \rceil = n/2$, so
+\[
+  T(n) \le c \lg(n/2) + 1 = c \lg n - c + 1.
+\]
+For this to be $\le c \lg n$, need $c \ge 1$.
+
+\paragraph{Inductive step, $n$ odd, $n \ge 3$.} Here $\lceil n/2 \rceil = (n+1)/2$, so
+\[
+  T(n) \le c \lg\!\left(\frac{n+1}{2}\right) + 1 = c \lg(n+1) - c + 1.
+\]
+Want this $\le c \lg n$, which rearranges to $c \cdot \lg(1 + 1/n) \le c - 1$. The left side is largest at $n = 3$, giving $\lg(4/3) \approx 0.415$. The constraint becomes
+\[
+  c \ge \frac{1}{1 - \lg(4/3)} = \frac{1}{\lg(3/2)} \approx 1.71.
+\]
+Pick $c = 2$. Then $c \cdot \lg(4/3) \approx 0.83 \le 1 = c - 1$. For larger odd $n$ the inequality only gets easier.
+
+\paragraph{Base case, $n = 2$.} Need $T(2) \le 2 \lg 2 = 2$. Since $T(2) = T(1) + 1$, this holds as long as $T(1) \le 1$. If $T(1)$ is bigger, bump $c$ up. The bound still has the form $c \lg n$.
+
+So $T(n) = O(\lg n)$.
+
+\bigskip
+
+\textbf{Exercise 4.3-3.}
+The chapter showed $T(n) = 2T(\lfloor n/2 \rfloor) + n$ is $O(n \lg n)$. Show it is also $\Omega(n \lg n)$, and conclude $\Theta(n \lg n)$.
+
+Following the chapter's convention (p.\,67), do the proof for $n$ a power of $2$ so $\lfloor n/2 \rfloor = n/2$. Theorem 4.1 handles the rest.
+
+Guess $T(n) \ge cn \lg n$ for some constant $c > 0$.
+
+\paragraph{Inductive step.} Assume $T(n/2) \ge c(n/2) \lg(n/2)$. Then
+\[
+  T(n) = 2T(n/2) + n \ge cn(\lg n - 1) + n = cn \lg n + (1-c)n.
+\]
+For $T(n) \ge cn \lg n$, need $(1 - c) n \ge 0$, i.e.\ $c \le 1$. Pick $c = 1$.
+
+\paragraph{Base case, $n = 2$.} Need $T(2) \ge 1 \cdot 2 \cdot \lg 2 = 2$. Since $T(2) = 2T(1) + 2 \ge 2$ assuming $T(1) \ge 0$, this holds.
+
+So $T(n) \ge n \lg n$ for $n$ a power of $2$, $n \ge 2$, giving $T(n) = \Omega(n \lg n)$.
+
+\paragraph{Floors.} If you want to be picky about non-powers of $2$, the standard move is to strengthen the guess to $T(n) \ge cn \lg n - dn$. The $-dn$ slack absorbs the gap between $\lfloor n/2 \rfloor$ and $n/2$. The chapter says floors and ceilings don't change the asymptotic answer (Theorem 4.1), so I'll leave the formal version there.
+
+\paragraph{Conclusion.} Combining the textbook's $O(n \lg n)$ with the $\Omega(n \lg n)$ above:
+\[
+  T(n) = \Theta(n \lg n).
+\]
+
+\subsubsection{Exploration}
+
+The substitution method is just guess and check. You guess the form of the answer, then prove it by induction. The chapter pairs it with recursion trees in $\S 4.4$ because trees give you the guess and substitution gives you the proof.
+
+Strassen's trick is small but compounds. He cut one multiplication out of eight by adding more additions. That drops the recursion's branching factor from $8$ to $7$, and the runtime exponent from $\lg 8 = 3$ to $\lg 7 \approx 2.81$. Same idea as merge sort beating insertion sort: shave a recursive call, win asymptotically.
+
+\subsubsection{Questions}
+
+The substitution method works only if you can guess the right form first. Is there a way to know when a guess is wrong before grinding through the whole induction, or do you just have to try it and see?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
