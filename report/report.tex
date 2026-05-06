@@ -1790,7 +1790,7 @@ Exercise 2 turned an English safety policy into clauses. Different people would 
 
 
 
-\subsection{Week 10}
+\subsection{Week 11}
 
 \subsubsection{Notes}
 
@@ -1798,101 +1798,131 @@ This section is optional.
 
 \subsubsection{Homework}
 
-\textbf{Exercise 4.3-1.}
-Show that $T(n) = T(n-1) + n$ has solution $O(n^2)$ using the substitution method.
+\textbf{Exercise 4.4-2 (Recursion tree for $T(n) = T(n/2) + n^2$).}
+Use a recursion tree to find an asymptotic upper bound, then verify with substitution.
 
-Guess $T(n) \le cn^2$ for some constant $c > 0$.
+The recurrence has only one recursive call, so the tree is a single path. At depth $i$ the subproblem size is $n/2^i$ and the cost at that level is $(n/2^i)^2 = n^2/4^i$. The path bottoms out when $n/2^i = 1$, so the tree has $\log_2 n$ levels.
 
-\paragraph{Inductive step.} Assume $T(n-1) \le c(n-1)^2$. Substitute into the recurrence:
+Sum the level costs:
 \[
-  T(n) \le c(n-1)^2 + n = cn^2 - 2cn + c + n = cn^2 - (2c-1)n + c.
+  T(n) = \sum_{i=0}^{\log_2 n - 1} \frac{n^2}{4^i} + \Theta(1) < n^2 \sum_{i=0}^{\infty} \frac{1}{4^i} = n^2 \cdot \frac{4}{3} = O(n^2).
 \]
-For this to be $\le cn^2$, I need $(2c-1)n \ge c$. Pick $c = 1$: the condition becomes $n \ge 1$, which is fine.
 
-\paragraph{Base case.} $T(1)$ is some constant. Need $T(1) \le c \cdot 1^2 = c$, so pick $c = \max(1, T(1))$.
+So my guess is $T(n) = O(n^2)$.
 
-So $T(n) \le cn^2$ for all $n \ge 1$, hence $T(n) = O(n^2)$.
+\emph{Verify by substitution.} Show $T(n) \leq d n^2$ for some $d > 0$:
+\[
+  T(n) \leq d(n/2)^2 + n^2 = \frac{d n^2}{4} + n^2 = \left(\frac{d}{4} + 1\right) n^2.
+\]
+Need $\frac{d}{4} + 1 \leq d$, which gives $d \geq 4/3$. Pick $d = 4/3$. \qed
 
-\emph{Sanity check.} Unrolling gives $T(n) = T(0) + (1 + 2 + \cdots + n) = T(0) + n(n+1)/2$, which is $\Theta(n^2)$. The bound is tight.
+$T(n) \geq n^2$ on the first step alone, so the bound is tight: $T(n) = \Theta(n^2)$.
 
 \bigskip
 
-\textbf{Exercise 4.3-2.}
-Show that $T(n) = T(\lceil n/2 \rceil) + 1$ has solution $O(\lg n)$.
+\textbf{Exercise 4.4-5 (Recursion tree for $T(n) = T(n-1) + T(n/2) + n$).}
+Use a recursion tree to find an asymptotic upper bound, then verify with substitution.
 
-Guess $T(n) \le c \lg n$. Since $\lg 1 = 0$, defer the boundary by proving the bound for $n \ge 2$.
-
-\paragraph{Inductive step, $n$ even, $n \ge 2$.} Here $\lceil n/2 \rceil = n/2$, so
+Each node $T(k)$ has two children, $T(k-1)$ and $T(k/2)$, so the tree is binary. The longest path follows the $T(n-1)$ chain down for $n$ steps, so the tree has depth at most $n$. That gives at most $2^n$ nodes. At each node $T(k)$ the cost contributed is $k \leq n$, so:
 \[
-  T(n) \le c \lg(n/2) + 1 = c \lg n - c + 1.
+  T(n) \leq (\text{number of nodes}) \cdot n \leq 2^n \cdot n = O(n \cdot 2^n).
 \]
-For this to be $\le c \lg n$, need $c \ge 1$.
 
-\paragraph{Inductive step, $n$ odd, $n \ge 3$.} Here $\lceil n/2 \rceil = (n+1)/2$, so
+That gives a guess of $T(n) = O(n \cdot 2^n)$.
+
+\emph{Why no polynomial works.} A common wrong guess is $O(n^2)$. Plug in $T(n) \leq c n^2$:
 \[
-  T(n) \le c \lg\!\left(\frac{n+1}{2}\right) + 1 = c \lg(n+1) - c + 1.
+  c(n-1)^2 + c(n/2)^2 + n \leq c n^2 \implies \frac{c n^2}{4} \leq 2 c n - c - n,
 \]
-Want this $\le c \lg n$, which rearranges to $c \cdot \lg(1 + 1/n) \le c - 1$. The left side is largest at $n = 3$, giving $\lg(4/3) \approx 0.415$. The constraint becomes
+which fails for large $n$ since the left side is $\Theta(n^2)$ and the right is $\Theta(n)$. The same issue kills any $O(n^a)$ guess: each $T(k)$ produces children whose sizes sum to $3k/2 - 1$, which is more than $k$, so the per-level cost grows by a factor of $3/2$. The tree has depth $n$, so the function ends up growing faster than any polynomial.
+
+\emph{Verify by substitution.} Show $T(n) \leq d n \cdot 2^n$. Since $T$ is non-decreasing and $n/2 \leq n-1$ for $n \geq 2$, we have $T(n/2) \leq T(n-1)$, so:
 \[
-  c \ge \frac{1}{1 - \lg(4/3)} = \frac{1}{\lg(3/2)} \approx 1.71.
+  T(n) \leq 2 T(n-1) + n \leq 2 \cdot d (n-1) \cdot 2^{n-1} + n = d (n-1) \cdot 2^n + n.
 \]
-Pick $c = 2$. Then $c \cdot \lg(4/3) \approx 0.83 \le 1 = c - 1$. For larger odd $n$ the inequality only gets easier.
+For $T(n) \leq d n \cdot 2^n$, need $d(n-1) \cdot 2^n + n \leq d n \cdot 2^n$, which reduces to $n \leq d \cdot 2^n$. Holds for $d \geq 1$ and $n \geq 1$. \qed
 
-\paragraph{Base case, $n = 2$.} Need $T(2) \le 2 \lg 2 = 2$. Since $T(2) = T(1) + 1$, this holds as long as $T(1) \le 1$. If $T(1)$ is bigger, bump $c$ up. The bound still has the form $c \lg n$.
-
-So $T(n) = O(\lg n)$.
+The bound is loose (the actual function grows slower than $n \cdot 2^n$) but it's a valid upper bound straight from the tree.
 
 \bigskip
 
-\textbf{Exercise 4.3-3.}
-The chapter showed $T(n) = 2T(\lfloor n/2 \rfloor) + n$ is $O(n \lg n)$. Show it is also $\Omega(n \lg n)$, and conclude $\Theta(n \lg n)$.
+\textbf{Exercise 4.5-1 (Master theorem applications).}
+Find tight asymptotic bounds for each recurrence. In every part, $a = 2$ and $b = 4$, so $n^{\log_b a} = n^{\log_4 2} = \sqrt{n}$. Compare $f(n)$ to $\sqrt{n}$ in each case.
 
-Following the chapter's convention (p.\,67), do the proof for $n$ a power of $2$ so $\lfloor n/2 \rfloor = n/2$. Theorem 4.1 handles the rest.
-
-Guess $T(n) \ge cn \lg n$ for some constant $c > 0$.
-
-\paragraph{Inductive step.} Assume $T(n/2) \ge c(n/2) \lg(n/2)$. Then
+\emph{Part a: $T(n) = 2 T(n/4) + 1$.}
+$f(n) = 1 = O(n^{1/2 - \epsilon})$ with $\epsilon = 1/2$. Case 1 applies:
 \[
-  T(n) = 2T(n/2) + n \ge cn(\lg n - 1) + n = cn \lg n + (1-c)n.
+  T(n) = \Theta(\sqrt{n}).
 \]
-For $T(n) \ge cn \lg n$, need $(1 - c) n \ge 0$, i.e.\ $c \le 1$. Pick $c = 1$.
 
-\paragraph{Base case, $n = 2$.} Need $T(2) \ge 1 \cdot 2 \cdot \lg 2 = 2$. Since $T(2) = 2T(1) + 2 \ge 2$ assuming $T(1) \ge 0$, this holds.
-
-So $T(n) \ge n \lg n$ for $n$ a power of $2$, $n \ge 2$, giving $T(n) = \Omega(n \lg n)$.
-
-\paragraph{Floors.} If you want to be picky about non-powers of $2$, the standard move is to strengthen the guess to $T(n) \ge cn \lg n - dn$. The $-dn$ slack absorbs the gap between $\lfloor n/2 \rfloor$ and $n/2$. The chapter says floors and ceilings don't change the asymptotic answer (Theorem 4.1), so I'll leave the formal version there.
-
-\paragraph{Conclusion.} Combining the textbook's $O(n \lg n)$ with the $\Omega(n \lg n)$ above:
+\emph{Part b: $T(n) = 2 T(n/4) + \sqrt{n}$.}
+$f(n) = \sqrt{n} = \Theta(n^{1/2})$. Case 2 applies:
 \[
-  T(n) = \Theta(n \lg n).
+  T(n) = \Theta(\sqrt{n} \log n).
 \]
+
+\emph{Part c: $T(n) = 2 T(n/4) + n$.}
+$f(n) = n = \Omega(n^{1/2 + \epsilon})$ with $\epsilon = 1/2$. Check regularity: $a f(n/b) = 2 (n/4) = n/2 = \tfrac{1}{2} f(n)$, so $c = 1/2 < 1$. Case 3 applies:
+\[
+  T(n) = \Theta(n).
+\]
+
+\emph{Part d: $T(n) = 2 T(n/4) + n^2$.}
+$f(n) = n^2 = \Omega(n^{1/2 + \epsilon})$ with $\epsilon = 3/2$. Check regularity: $a f(n/b) = 2 (n/4)^2 = n^2/8 = \tfrac{1}{8} f(n)$, so $c = 1/8 < 1$. Case 3 applies:
+\[
+  T(n) = \Theta(n^2).
+\]
+
+\bigskip
+
+\textbf{Exercise 4.5-4 (Master theorem on $T(n) = 4 T(n/2) + n^2 \log n$).}
+Decide whether the master method applies, then give an asymptotic upper bound.
+
+Here $a = 4$, $b = 2$, so $n^{\log_b a} = n^2$. Compare $f(n) = n^2 \log n$ to $n^2$.
+
+\emph{Master method does not apply.} Walk through the cases:
+\begin{itemize}
+  \item $f(n) = O(n^{2 - \epsilon})$? No, $n^2 \log n$ is bigger than $n^2$, not smaller.
+  \item $f(n) = \Theta(n^2)$? No, the $\log n$ factor breaks the equality.
+  \item $f(n) = \Omega(n^{2 + \epsilon})$? Would need $\log n \geq n^\epsilon$ eventually for some $\epsilon > 0$, but $\log n$ grows slower than every positive power of $n$.
+\end{itemize}
+So $f(n)$ is bigger than $n^2$ but not \emph{polynomially} bigger. It falls in the gap between Case 2 and Case 3, and the master theorem can't classify it.
+
+\emph{Upper bound by recursion tree.} At depth $i$ there are $4^i$ subproblems of size $n/2^i$, each costing $(n/2^i)^2 \log(n/2^i) = (n^2/4^i)(\log n - i)$. The level total is:
+\[
+  4^i \cdot \frac{n^2}{4^i}(\log n - i) = n^2 (\log n - i).
+\]
+The $4^i$ cancels the $1/4^i$, so each level contributes $n^2$ times something shrinking. Tree depth is $\log_2 n$. The bottom has $4^{\log_2 n} = n^2$ leaves of cost $\Theta(1)$, totaling $\Theta(n^2)$.
+
+Sum over all levels:
+\[
+  T(n) = \sum_{i=0}^{\log_2 n - 1} n^2 (\log n - i) + \Theta(n^2) = n^2 \sum_{j=1}^{\log_2 n} j + \Theta(n^2) = n^2 \cdot \frac{(\log n)(\log n + 1)}{2} + \Theta(n^2).
+\]
+So $T(n) = O(n^2 \log^2 n)$.
+
+\emph{Verify by substitution.} Show $T(n) \leq c n^2 \log^2 n$:
+\[
+  T(n) \leq 4 c (n/2)^2 \log^2(n/2) + n^2 \log n = c n^2 (\log n - 1)^2 + n^2 \log n.
+\]
+Expand:
+\[
+  = c n^2 \log^2 n - 2 c n^2 \log n + c n^2 + n^2 \log n = c n^2 \log^2 n - (2c - 1) n^2 \log n + c n^2.
+\]
+For $T(n) \leq c n^2 \log^2 n$, need $(2c - 1) \log n \geq c$, which holds for $c \geq 1$ and $n$ large enough. \qed
+
+The bound is tight: $T(n) = \Theta(n^2 \log^2 n)$.
 
 \subsubsection{Exploration}
 
-The substitution method is just guess and check. You guess the form of the answer, then prove it by induction. The chapter pairs it with recursion trees in $\S 4.4$ because trees give you the guess and substitution gives you the proof.
+The master theorem is basically a shortcut. Most divide-and-conquer recurrences look like $T(n) = aT(n/b) + f(n)$, and the three cases just compare $f(n)$ to $n^{\log_b a}$. Whichever side is bigger wins. That covers most of what you run into.
 
-Strassen's trick is small but compounds. He cut one multiplication out of eight by adding more additions. That drops the recursion's branching factor from $8$ to $7$, and the runtime exponent from $\lg 8 = 3$ to $\lg 7 \approx 2.81$. Same idea as merge sort beating insertion sort: shave a recursive call, win asymptotically.
+But the gaps matter. Exercise 4.5-4 sits right between Case 2 and Case 3, and 4.4-5 doesn't fit the form at all because the two recursive calls shrink the input by different amounts. Recursion trees pick up where the master theorem stops.
+
+This ties back to Big O from Week 7. The whole point of asymptotic notation was to ignore constants and keep the shape of the growth. Recursion trees are the same idea visually. You can see whether the work is concentrated at the root, balanced across levels, or piled at the leaves, and that tells you the dominant term.
 
 \subsubsection{Questions}
 
-The substitution method works only if you can guess the right form first. Is there a way to know when a guess is wrong before grinding through the whole induction, or do you just have to try it and see?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+When does a recursion tree tell you something the master theorem can't?
 
 
 
