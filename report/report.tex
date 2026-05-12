@@ -1954,6 +1954,132 @@ When does a recursion tree tell you something the master theorem can't?
 
 
 
+\subsection{Week 12}
+
+\subsubsection{Notes}
+
+This section is optional. 
+
+\subsubsection{Homework}
+
+\textbf{Exercise 5.2-3 (Expected value of the sum of $n$ dice).}
+Use indicator random variables to compute the expected value of the sum of $n$ dice.
+
+Assume each die is a fair 6-sided die, so it shows each value in $\{1, 2, 3, 4, 5, 6\}$ with probability $1/6$.
+
+Let $S$ be the sum of all $n$ dice, and let $X_i$ be the value shown on die $i$, so:
+\[
+  S = X_1 + X_2 + \cdots + X_n = \sum_{i=1}^{n} X_i.
+\]
+
+First I'll find $E[X_i]$ for a single die using indicator random variables. For each value $k \in \{1, 2, 3, 4, 5, 6\}$, define:
+\[
+  I_{i,k} = \mathbf{I}\{\text{die } i \text{ shows value } k\} =
+  \begin{cases}
+    1 & \text{if die } i \text{ shows } k, \\
+    0 & \text{otherwise.}
+  \end{cases}
+\]
+
+Then the value of die $i$ is:
+\[
+  X_i = \sum_{k=1}^{6} k \cdot I_{i,k}.
+\]
+
+By Lemma 5.1, $E[I_{i,k}] = \Pr\{\text{die } i \text{ shows } k\} = 1/6$.
+
+By linearity of expectation:
+\[
+  E[X_i] = \sum_{k=1}^{6} k \cdot E[I_{i,k}] = \sum_{k=1}^{6} k \cdot \frac{1}{6} = \frac{1}{6}(1 + 2 + 3 + 4 + 5 + 6) = \frac{21}{6} = \frac{7}{2}.
+\]
+
+Now apply linearity again to the full sum:
+\[
+  E[S] = E\left[\sum_{i=1}^{n} X_i\right] = \sum_{i=1}^{n} E[X_i] = \sum_{i=1}^{n} \frac{7}{2} = \frac{7n}{2}.
+\]
+
+So the expected value of the sum of $n$ dice is $7n/2$.
+
+\bigskip
+
+\textbf{Exercise 5.2-4 (Hat-check problem).}
+Each of $n$ customers gives a hat to a hat-check person at a restaurant. The hat-check person gives the hats back in a random order. Use indicator random variables to find the expected number of customers who get back their own hat.
+
+For each customer $i$, define the indicator random variable:
+\[
+  X_i = \mathbf{I}\{\text{customer } i \text{ gets their own hat back}\} =
+  \begin{cases}
+    1 & \text{if customer } i \text{ gets their own hat,} \\
+    0 & \text{otherwise.}
+  \end{cases}
+\]
+
+Let $X$ be the total number of customers who get their own hat back. Then:
+\[
+  X = X_1 + X_2 + \cdots + X_n = \sum_{i=1}^{n} X_i.
+\]
+
+By Lemma 5.1:
+\[
+  E[X_i] = \Pr\{\text{customer } i \text{ gets their own hat back}\}.
+\]
+
+Since the hats are returned in a uniform random permutation, customer $i$ is equally likely to receive any one of the $n$ hats. Exactly one of those hats is theirs, so:
+\[
+  \Pr\{\text{customer } i \text{ gets their own hat back}\} = \frac{1}{n},
+\]
+which gives $E[X_i] = 1/n$.
+
+By linearity of expectation:
+\[
+  E[X] = \sum_{i=1}^{n} E[X_i] = \sum_{i=1}^{n} \frac{1}{n} = n \cdot \frac{1}{n} = 1.
+\]
+
+So the expected number of customers who get back their own hat is $1$, regardless of $n$. This works even though the $X_i$ are not independent (if the first $n-1$ customers all got their own hats, the last one must too), since linearity of expectation does not require independence. \qed
+
+\subsubsection{Exploration}
+
+The hat-check problem caught me off guard. I figured the answer would depend on $n$ somehow, since bigger groups should give more matches. But it's just 1 every time. Going through the indicator setup made it obvious why. Each person has a $1/n$ shot at their own hat, and there are $n$ people, so the $n$ and the $1/n$ kill each other.
+
+The thing I want to remember is that linearity of expectation works even when the variables aren't independent. In hat-check the indicators are very much not independent (if everyone else got their hat back, the last person has to), but it still works.
+
+Coming off Week 11, this is the first time we've done average-case instead of worst-case analysis. The hiring problem hits that hard: worst case is $n$ hires, on average it's only $\ln n$. Same algorithm, way different cost.
+
+\subsubsection{Questions}
+
+Why does the hat-check expected value land at exactly $1$ for every $n$, instead of drifting with the size?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
