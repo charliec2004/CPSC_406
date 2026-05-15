@@ -2241,6 +2241,140 @@ Why does the hat-check expected value land at exactly $1$ for every $n$, instead
 
 
 
+\subsection{Week 13}
+
+\subsubsection{Notes}
+
+This section is optional.
+
+\subsubsection{Homework}
+
+\textbf{Exercise 1 (Encoding Sudoku).}
+Encode the rules of Sudoku as a CNF $\varphi = C_1 \land C_2 \land C_3 \land C_4 \land C_5 \land C_6$ using a variable $x_{r,c,v}$ for each $r, c, v \in \{1, \ldots, 9\}$, where $x_{r,c,v}$ is true iff cell $(r, c)$ has value $v$.
+
+\paragraph{$C_1$: each entry has at least one value.}
+For every cell, at least one of the nine value variables is true:
+\[
+  C_1 = \bigwedge_{r=1}^{9} \bigwedge_{c=1}^{9} \bigvee_{v=1}^{9} x_{r,c,v}.
+\]
+That's 81 clauses, each a 9-literal disjunction.
+
+\paragraph{$C_2$: each entry has at most one value.}
+For every cell, no two distinct values are both true. Restricting to $v < v'$ avoids duplicate pairs:
+\[
+  C_2 = \bigwedge_{r=1}^{9} \bigwedge_{c=1}^{9} \bigwedge_{1 \le v < v' \le 9} (\lnot x_{r,c,v} \lor \lnot x_{r,c,v'}).
+\]
+That's $81 \cdot \binom{9}{2} = 2916$ binary clauses.
+
+\paragraph{$C_3$: each row has all numbers.}
+For every row $r$ and every value $v$, at least one column has that value:
+\[
+  C_3 = \bigwedge_{r=1}^{9} \bigwedge_{v=1}^{9} \bigvee_{c=1}^{9} x_{r,c,v}.
+\]
+Combined with $C_1 \land C_2$ (each cell holds exactly one value), pigeonhole forces each value to appear exactly once per row, so a separate ``no duplicates'' clause is not needed.
+
+\paragraph{$C_4$: each column has all numbers.}
+Symmetric to $C_3$:
+\[
+  C_4 = \bigwedge_{c=1}^{9} \bigwedge_{v=1}^{9} \bigvee_{r=1}^{9} x_{r,c,v}.
+\]
+
+\paragraph{$C_5$: each $3 \times 3$ block has all numbers.}
+Index blocks by $(a, b) \in \{0, 1, 2\}^2$; block $(a, b)$ contains the cells $(3a + i, 3b + j)$ for $i, j \in \{1, 2, 3\}$:
+\[
+  C_5 = \bigwedge_{a=0}^{2} \bigwedge_{b=0}^{2} \bigwedge_{v=1}^{9} \bigvee_{i=1}^{3} \bigvee_{j=1}^{3} x_{3a+i,\, 3b+j,\, v}.
+\]
+
+\paragraph{$C_6$: respect the given clues.}
+Let $S \subseteq \{1, \ldots, 9\}^3$ be the set of clues, where $(r, c, v) \in S$ means cell $(r, c)$ is pre-filled with value $v$:
+\[
+  C_6 = \bigwedge_{(r, c, v) \in S} x_{r,c,v}.
+\]
+These are unit clauses, one per clue.
+
+\bigskip
+
+\textbf{Exercise 2 (Probabilistic algorithm analysis).}
+Analyze the following randomized algorithm.
+
+\begin{verbatim}
+CountLargeRolls(n):
+  c <- 0
+  for i = 1 to n:
+    for j = 1 to 2i:
+      r <- uniform random in {1, 2, 3, 4, 5, 6}
+      if r >= 5:
+        c <- c + 1
+  return c
+\end{verbatim}
+
+\paragraph{Part 1: Worst-case running time.}
+The inner loop runs $2i$ times on outer iteration $i$, so the total number of inner iterations is
+\[
+  \sum_{i=1}^{n} 2i = 2 \cdot \frac{n(n+1)}{2} = n(n+1).
+\]
+Each iteration does constant work, so $T(n) = O(n^2)$. The loop bounds don't depend on the random rolls, so worst case and best case are both $\Theta(n^2)$.
+
+\paragraph{Part 2: $E[X]$ using indicator random variables.}
+Let $X$ be the value returned. For each outer index $i \in \{1, \ldots, n\}$ and inner index $j \in \{1, \ldots, 2i\}$, define:
+\[
+  X_{i,j} = \mathbf{I}\{\text{the roll on iteration } (i, j) \text{ is } \ge 5\} =
+  \begin{cases}
+    1 & \text{if } r \ge 5 \text{ on iteration } (i, j), \\
+    0 & \text{otherwise.}
+  \end{cases}
+\]
+Then $X = \sum_{i=1}^{n} \sum_{j=1}^{2i} X_{i,j}$.
+
+Since $r$ is uniform on $\{1, \ldots, 6\}$, $\Pr\{r \ge 5\} = |\{5, 6\}|/6 = 1/3$, so $E[X_{i,j}] = 1/3$.
+
+By linearity of expectation:
+\[
+  E[X] = \sum_{i=1}^{n} \sum_{j=1}^{2i} E[X_{i,j}] = \sum_{i=1}^{n} 2i \cdot \frac{1}{3} = \frac{2}{3} \cdot \frac{n(n+1)}{2} = \frac{n(n+1)}{3}.
+\]
+
+\paragraph{Part 3 (Bonus): What's wrong with the student's reasoning.}
+The student wrote $n \cdot \frac{2}{6}$. The per-roll probability $2/6 = 1/3$ is correct, but $n$ is the number of outer-loop iterations, not the number of rolls. The total number of rolls is $\sum_{i=1}^{n} 2i = n(n+1)$, since the inner loop runs $2i$ times on outer iteration $i$. Multiplying $1/3$ by the actual number of rolls gives $n(n+1)/3$, which is $\Theta(n^2)$, not $\Theta(n)$.
+
+\paragraph{Part 4 (Bonus): Condition changed to $r = 6$.}
+Only the per-roll probability changes: $\Pr\{r = 6\} = 1/6$ instead of $1/3$. The same linearity argument gives:
+\[
+  E[X] = \sum_{i=1}^{n} 2i \cdot \frac{1}{6} = \frac{1}{6} \cdot n(n+1) = \frac{n(n+1)}{6}.
+\]
+Halving the per-roll success probability halves the expectation.
+
+\subsubsection{Exploration}
+
+The Sudoku encoding clicked once I saw pigeonhole was doing the work. $C_3$, $C_4$, and $C_5$ only say ``each value appears at least once.'' That looks weak. But $C_1 \land C_2$ already pin each cell to exactly one value, and you can't fit 9 required values into 9 cells without each one showing up exactly once. So ``at least once'' upgrades to ``exactly once'' for free.
+
+CountLargeRolls is the Week 12 indicator trick on a randomized algorithm. The new piece is the count of indicators: $\sum_{i=1}^{n} 2i = n(n+1)$, not $n$. Part 3 falls into exactly that trap. Right per-roll probability, wrong index count.
+
+\subsubsection{Questions}
+
+When does randomizing the algorithm itself give you something you couldn't get from just assuming a random input?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
